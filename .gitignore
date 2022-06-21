@@ -1,4 +1,6 @@
 sw/
 logs/
 *.swp
+*.swn
+*.swo
 latest
