@@ -16,7 +16,7 @@ export p0ip=1.1.1.5
 export p0eth=enp59s0f0
 
 export vmname=gen-l-vrt-439-141-CentOS-7.4
-export vmxml=gen-l-vrt-439-141-CentOS-7.4.xml
+export vmxml=gen-l-vrt-439-141-CentOS-7.4.xml.net
 export vmip=gen-l-vrt-439-141
 export vmeth=eth1
 export vmethip=1.1.1.20
