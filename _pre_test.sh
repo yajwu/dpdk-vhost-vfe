@@ -4,10 +4,10 @@
 [ $sourced -eq 0 ] && . configs/conf.sh && . common.sh && . /mswg/projects/fw/fw_ver/hca_fw_tools/.fwvalias
 
 function cleanup_env {
-	loginfo cleanup_env
 	systemctl restart libvirtd
 
-	ping $vmip -c 1 && runsshcmd $vmip shutdown -h now
+	virsh shutdown $vmname && sleep 4
+	#ping $vmip -c 1 && runsshcmd $vmip shutdown -h now
 
 	pkill -x ping
 	pkill -x sshpass
@@ -18,13 +18,18 @@ function cleanup_env {
 	pgrep dpdk-vdpa && ( logerr "kill dpdk-vdpa fail" && exit 1)
 
 	for i in `virsh list --name`; do
-		virsh shutdown $i
+		virsh destroy $i
 		sleep 2
 	done
 }
 
 function init_cleanup_env {
 	loginfo init cleanup_env
+	cleanup_env
+}
+
+function post_cleanup_env {
+	loginfo post cleanup_env
 	cleanup_env
 }
 
@@ -51,17 +56,21 @@ function start_vdpa {
 	export vdpalog=$logdir/vdpa.log
 	. ./vdpacmd
 	sleep 2 && loginfo "vdpa process `pgrep dpdk-vdpa`"
-	pgrep dpdk-vdpa || ( logerr "bootup dpdk-vdpa fail" && exit 1)
+	pgrep dpdk-vdpa || { logerr "bootup dpdk-vdpa fail" ; exit 1; }
+
+	## add vf on bf2
+	[[ ${testtype} == "blk" ]] && runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id 0 --bdev_type spdk --bdev Malloc0'
 }
 
 function start_vm {
 	loginfo start vm
-	virsh create configs/$vmxml
+
+	runcmd virsh create configs/${vmxml}.${testtype}
 	sleep 2
 	virsh list --all
 
 	local vms=`virsh list --state-running --name`
-	[[ "$vms" == *"$2"* ]] || ( logerr "vm_check fail: $1 $2" && exit 1)
+	[[ "$vms" == *"$2"* ]] || { logerr "vm_check fail: $1 $2" ; exit 1; }
 }
 
 function start_vdpa_vm {

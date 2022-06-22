@@ -11,17 +11,21 @@ source  test_common.sh
 export testits=1
 
 function testcase_pre {
+	wait_vm
 }
 
 function testcase_run {
-	echo "No op in run"
-	sleep 1
+	vm_check_running || return 1
+	ssh
+	runsshcmd $vmip 'dd if=/dev/vda of=/dev/null bs=4k count=9999'
 }
 
 function testcase_check {
+:
 }
 
 function testcase_clean {
+:
 }
 
 if [ $sourced -eq 0 ]; then

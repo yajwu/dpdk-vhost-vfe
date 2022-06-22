@@ -7,8 +7,9 @@ source common.sh
 source /mswg/projects/fw/fw_ver/hca_fw_tools/.fwvalias
 #set -x
 function run_main {
-	. _pre_test.sh
+	export testtype=net
 
+	. _pre_test.sh
 	init_cleanup_env
 	info_env
 	prep_vf_ovs
@@ -56,6 +57,7 @@ function run_main {
 		[[ "$ret" == "fail" && "$stop_on_error" == "yes" ]] && break
 	done
 
+	post_cleanup_env
 	loginfo " ==  result == "
 	cat $testresult
 }

@@ -1,13 +1,15 @@
-
-function ping_pre {
-	loginfo wait vm bootup ...
-
+function wait_vm {
 	for i in {1..10};do
 		runsshcmd $vmip date
 		[[ $? -eq 0 ]] && break
 		echo . && sleep 6
 	done
+}
 
+function ping_pre {
+	loginfo wait vm bootup ...
+
+	wait_vm
 	runsshcmd $vmip systemctl stop NetworkManager
 	runsshcmd $vmip ifconfig $vmeth $vmethip
 	runsshcmd $vmip ifconfig $vmeth

@@ -2,9 +2,9 @@
 
 
 (return 0 2>/dev/null) && sourced=1 || sourced=0
-[ $sourced -eq 0 ] && source configs/conf.sh && source common.sh && export testlog=logs/testlog
+[ $sourced -eq 0 ] && . configs/conf.sh && . common.sh && export testlog=logs/testlog
 
-source  test_common.sh
+.  test_common.sh
 
 [ -z $vmip ] &&  echo 'need set $vmip or run in wrapper' && exit 1
 

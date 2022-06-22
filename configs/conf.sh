@@ -5,6 +5,7 @@
 
 export dpdkapp=sw/dpdk/build/examples/dpdk-vdpa
 export qemuapp=sw/qemu/bin/x86_64-softmmu/qemu-system-x86_64
+export testtype=net
 
 ## default value is on gen-l-vrt-439
 #export pf_ifname=enp59s0f0
@@ -16,7 +17,7 @@ export p0ip=1.1.1.5
 export p0eth=enp59s0f0
 
 export vmname=gen-l-vrt-439-141-CentOS-7.4
-export vmxml=gen-l-vrt-439-141-CentOS-7.4.xml.net
+export vmxml=gen-l-vrt-439-141-CentOS-7.4.xml
 export vmip=gen-l-vrt-439-141
 export vmeth=eth1
 export vmethip=1.1.1.20
