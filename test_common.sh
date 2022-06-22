@@ -16,7 +16,7 @@ function ping_pre {
 	runsshcmd $vmip ethtool -l $vmeth
 
 	#runsshcmd_bg "$vmip ping $testbed_br_ip -i 0.6 |tee -a $testlog"
-	runcmd_bg "ping $vmip -i 0.6 |tee -a $testlog"
+	runcmd_bg "ping $vmethip -i 0.6 |tee -a $testlog"
 	export ping_pid=$!
 	sleep 2
 }

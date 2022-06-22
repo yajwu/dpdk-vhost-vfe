@@ -14,7 +14,7 @@ function cleanup_env {
 	pkill dpdk-vdpa && sleep 3
 	pgrep dpdk-vdpa && ( logerr "kill dpdk-vdpa fail" && exit 1)
 
-	for i in `virsh list --name --running`; do
+	for i in `virsh list --name`; do
 		runcmd virsh destroy $i
 		sleep 2
 	done
@@ -77,7 +77,7 @@ function start_vdpa_vm {
 
 function start_peer {
     loginfo start test env on $peer
-    runsshcmd_bg $peer '\(cd /images/testvdpa \;  ./run.sh slave \; hostname\)'
+    runsshcmd_bg $peer '\(cd /images/testvfe \;  ./run.sh slave \; hostname\)'
 }
 
 function stop_peer {
