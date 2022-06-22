@@ -4,9 +4,9 @@
 [ $sourced -eq 0 ] && . configs/conf.sh && . common.sh && . /mswg/projects/fw/fw_ver/hca_fw_tools/.fwvalias
 
 function cleanup_env {
-	systemctl restart libvirtd
+	runcmd systemctl restart libvirtd
 
-	virsh shutdown $vmname && sleep 4
+	runcmd virsh shutdown $vmname && sleep 4
 	#ping $vmip -c 1 && runsshcmd $vmip shutdown -h now
 
 	pkill -x ping
