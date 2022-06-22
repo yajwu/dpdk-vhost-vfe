@@ -58,6 +58,7 @@ function run_main {
 		[[ "$ret" == "fail" && "$stop_on_error" == "yes" ]] && break
 	done
 
+	post_cleanup_env
 	loginfo " ==  result == "
 	cat $testresult
 }

@@ -15,8 +15,7 @@ function testcase_pre {
 }
 
 function testcase_run {
-	vm_check_running || return 1
-	ssh
+	vm_check_running $hname $vmname || return 1
 	runsshcmd $vmip 'dd if=/dev/vda of=/dev/null bs=4k count=9999'
 }
 

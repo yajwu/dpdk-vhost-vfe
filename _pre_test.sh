@@ -5,20 +5,17 @@
 
 function cleanup_env {
 	runcmd systemctl restart libvirtd
-
 	runcmd virsh shutdown $vmname && sleep 4
 	#ping $vmip -c 1 && runsshcmd $vmip shutdown -h now
 
 	pkill -x ping
 	pkill -x sshpass
 
-	pkill dpdk-vdpa || pkill -9 -x dpdk-vdpa
-	pgrep dpdk-vdpa && sleep 4
-
+	pkill dpdk-vdpa && sleep 3
 	pgrep dpdk-vdpa && ( logerr "kill dpdk-vdpa fail" && exit 1)
 
-	for i in `virsh list --name`; do
-		virsh destroy $i
+	for i in `virsh list --name --running`; do
+		runcmd virsh destroy $i
 		sleep 2
 	done
 }
