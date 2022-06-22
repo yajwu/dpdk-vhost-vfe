@@ -13,8 +13,8 @@ function run_main {
 	info_env
 	prep_vf_ovs
 
-	export pfslot=$netpf
-	export vfslot=$netvf0
+	export pfslot=$blkpf
+	export vfslot=$blkvf0
 
 	if [ "$1" == "slave" ]; then
 		start_vdpa
@@ -24,7 +24,7 @@ function run_main {
 	fi
 
 # run case
-	[ -z $cases ] && cases=`ls testcase*`
+	[ -z $cases ] && cases=`ls testblk*`
 
 	export testresult=$logdir/result
 	for tc in $cases; do

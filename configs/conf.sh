@@ -22,7 +22,6 @@ export vmeth=eth1
 export vmethip=1.1.1.20
 export devmac="e4:11:c6:d3:45:f3"
 
-#gen-l-vrt-439-141-CentOS-7.4.xml
 export peer=gen-l-vrt-440
 export hname=`hostname`
 
