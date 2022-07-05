@@ -5,7 +5,7 @@
 
 function cleanup_env {
 	runcmd systemctl restart libvirtd
-	runcmd virsh shutdown $vmname && sleep 4
+	runcmd virsh shutdown $vmname && sleep 3
 	#ping $vmip -c 1 && runsshcmd $vmip shutdown -h now
 
 	pkill -x ping
@@ -57,6 +57,13 @@ function start_vdpa {
 
 	## add vf on bf2
 	[[ ${testtype} == "blk" ]] && runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id 0 --bdev_type spdk --bdev Malloc0'
+	sleep 2
+
+	runcmd python sw/dpdk/examples/vdpa/vhostmgmt mgmtpf -a 0000:3b:00.2
+	runcmd python sw/dpdk/examples/vdpa/vhostmgmt vf -a 0000:3b:00.2 -v 1
+
+	runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac
+
 }
 
 function start_vm {

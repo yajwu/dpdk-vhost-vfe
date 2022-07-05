@@ -1,18 +1,13 @@
 #!/bin/bash -x
 
 [ -n "$vdpalog" ] || {
-./sw/dpdk/build/examples/dpdk-vdpa \
--a 0000:3b:00.3,vdpa=1 -a 0000:3b:05.1,vdpa=1 \
---vfio-vf-token=a7bf1177-fe8a-44f6-8a8f-13080ebfde10 \
---log-level=.,8 -- --client --iface /tmp/sock-blk
-exit 0
+sudo sw/dpdk/build/examples/dpdk-vdpa -a 0000:00:00.0 --log-level=.,8 -- --client --iface /tmp/vf- ;
+exit 0;
 }
 
 loginfo dpdk-vdpa $pfslot $vfslot
 # background run
 tail -f /dev/null | \
-./sw/dpdk/build/examples/dpdk-vdpa \
--a $pfslot,vdpa=1 -a $vfslot,vdpa=1 \
---vfio-vf-token=a7bf1177-fe8a-44f6-8a8f-13080ebfde10 \
---log-level=.,8 -- --client --iface /tmp/sock-${testtype}  >> $vdpalog 2>&1 &
+sw/dpdk/build/examples/dpdk-vdpa -a 0000:00:00.0 --log-level=.,8 -- --client --iface /tmp/vf- \
+ >> $vdpalog 2>&1 &
 
