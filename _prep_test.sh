@@ -3,21 +3,31 @@
 (return 0 2>/dev/null) && sourced=1 || sourced=0
 [ $sourced -eq 0 ] && . configs/conf.sh && . common.sh && . /mswg/projects/fw/fw_ver/hca_fw_tools/.fwvalias
 
-function cleanup_env {
-	runcmd systemctl restart libvirtd
+function stop_vdpa {
+	pkill dpdk-vdpa && sleep 3 && pgrep dpdk-vdpa && sleep 5
+	pgrep dpdk-vdpa && { logerr "kill dpdk-vdpa fail" && return 1; }
+
+	return 0
+}
+
+function stop_vm {
 	runcmd virsh shutdown $vmname && sleep 3
 	#ping $vmip -c 1 && runsshcmd $vmip shutdown -h now
-
-	pkill -x ping
-	pkill -x sshpass
-
-	pkill dpdk-vdpa && sleep 3
-	pgrep dpdk-vdpa && ( logerr "kill dpdk-vdpa fail" && exit 1)
 
 	for i in `virsh list --name`; do
 		runcmd virsh destroy $i
 		sleep 2
 	done
+}
+
+function cleanup_env {
+	runcmd systemctl restart libvirtd
+
+	pkill -x ping
+	pkill -x sshpass
+
+	stop_vdpa
+	stop_vm
 }
 
 function init_cleanup_env {
@@ -33,7 +43,7 @@ function post_cleanup_env {
 function info_env {
 	loginfo "==== info ===="
 	flq | tee -a $logdir/info
-	systemctl status libvirtd | tee -a $logdir/info
+	#systemctl status libvirtd | tee -a $logdir/info
 	$qemuapp --version | tee -a $logdir/info
 }
 

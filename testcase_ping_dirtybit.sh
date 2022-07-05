@@ -7,7 +7,7 @@ source  test_common.sh
 
 [ -z $vmip ] &&  echo 'need set $vmip or run in wrapper' && exit 1
 
-export testits=1
+export testits=3
 
 function testcase_pre {
 	ping_pre

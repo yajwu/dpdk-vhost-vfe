@@ -12,14 +12,8 @@ function testcase_pre {
 
 function testcase_run {
 	loginfo "kill dpdk-vdpa"
+	stop_vdpa || { logerr ">>" && return 1; }
 
-	#pkill -SIGTERM dpdk-vdpa #|| pkill -9 dpak-vdpa
-	#pkill dpdk-vdpa || pkill -9 dpak-vdpa
-	pkill -9 dpak-vdpa
-
-	pgrep dpdk-vdpa && sleep 4 && pgrep dpdk-vdpa && sleep 4
-	pgrep dpdk-vdpa && logerr "kill vdpa fail" && return 1
-	
 	start_vdpa
 	sleep 5 && loginfo "vdpa process `pgrep dpdk-vdpa`"
 }

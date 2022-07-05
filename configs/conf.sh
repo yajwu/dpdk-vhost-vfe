@@ -1,7 +1,7 @@
 ## bf2 vfe-vdpa test configuration
 
 export stop_on_error=yes
-export its_overwrite=1
+#export its_overwrite=1
 
 export dpdkapp=sw/dpdk/build/examples/dpdk-vdpa
 export qemuapp=sw/qemu/bin/x86_64-softmmu/qemu-system-x86_64
