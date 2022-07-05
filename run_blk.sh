@@ -5,11 +5,11 @@
 source ./configs/conf.sh
 source common.sh
 source /mswg/projects/fw/fw_ver/hca_fw_tools/.fwvalias
+source _prep_test.sh
 #set -x
 
 function run_main {
 	export testtype=blk
-	. _pre_test.sh
 
 	init_cleanup_env
 	info_env

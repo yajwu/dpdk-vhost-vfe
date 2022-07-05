@@ -1,4 +1,5 @@
 function wait_vm {
+	sleep 10
 	for i in {1..10};do
 		runsshcmd $vmip date
 		[[ $? -eq 0 ]] && break

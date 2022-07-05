@@ -59,8 +59,8 @@ function start_vdpa {
 	[[ ${testtype} == "blk" ]] && runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id 0 --bdev_type spdk --bdev Malloc0'
 	sleep 2
 
-	runcmd python sw/dpdk/examples/vdpa/vhostmgmt mgmtpf -a 0000:3b:00.2
-	runcmd python sw/dpdk/examples/vdpa/vhostmgmt vf -a 0000:3b:00.2 -v 1
+	runcmd python sw/dpdk/examples/vdpa/vhostmgmt mgmtpf -a ${pfslot}
+	runcmd python sw/dpdk/examples/vdpa/vhostmgmt vf -a ${pfslot} -v 1
 
 	runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac
 
