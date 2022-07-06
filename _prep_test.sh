@@ -16,7 +16,7 @@ function stop_vm {
 
 	for i in `virsh list --name`; do
 		runcmd virsh destroy $i
-		sleep 2
+		sleep 1
 	done
 }
 
@@ -65,14 +65,14 @@ function start_vdpa {
 	sleep 2 && loginfo "vdpa process `pgrep dpdk-vdpa`"
 	pgrep dpdk-vdpa || { logerr "bootup dpdk-vdpa fail" ; exit 1; }
 
-	## add vf on bf2
-	[[ ${testtype} == "blk" ]] && runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id 0 --bdev_type spdk --bdev Malloc0'
-	sleep 2
 
 	runcmd python sw/dpdk/examples/vdpa/vhostmgmt mgmtpf -a ${pfslot}
+	## add vf on bf2
+	[[ ${testtype} == "blk" ]] && runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id 0 --bdev_type spdk --bdev Null0'
+	sleep 1
 	runcmd python sw/dpdk/examples/vdpa/vhostmgmt vf -a ${pfslot} -v 1
 
-	runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac
+	[[ ${testtype} == "net" ]] && runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac
 
 }
 
