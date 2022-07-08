@@ -18,7 +18,6 @@ echo 1 > /sys/module/vfio_pci/parameters/enable_sriov
 
 for pf in $netpf $blkpf; do
 	drv=`readlink -f  /sys/bus/pci/devices/${pf}/driver`
-	echo $drv
 	[[ "$drv" == *"vfio"* ]] || {
 		[[ -L /sys/bus/pci/devices/${pf}/driver ]] && {
 			echo unbind $pf
@@ -48,7 +47,7 @@ sleep 2
 
 # 3. setup ovs on arm for net
 #runbf2cmd $bf2ip ovs-vsctl add-port ovsbr1 en3f0pf0sf3000
-runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac
+#runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac
 ifconfig $p0eth $p0ip/24
 
 

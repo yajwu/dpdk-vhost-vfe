@@ -11,28 +11,22 @@ function stop_vdpa {
 }
 
 function stop_vm {
-	runcmd virsh shutdown $vmname && sleep 3
-	#ping $vmip -c 1 && runsshcmd $vmip shutdown -h now
-
-	for i in `virsh list --name`; do
-		runcmd virsh destroy $i
-		sleep 1
-	done
+	virsh list | grep -q $vmname && virsh destroy $vmname
 }
 
 function cleanup_env {
-	runcmd systemctl restart libvirtd
-
 	pkill -x ping
 	pkill -x sshpass
 
 	stop_vdpa
 	stop_vm
+
 }
 
 function init_cleanup_env {
 	loginfo init cleanup_env
 	cleanup_env
+	runcmd systemctl restart libvirtd
 }
 
 function post_cleanup_env {
@@ -105,6 +99,17 @@ function stop_peer {
 if [ $sourced -eq 0 ]; then
 	#info_env
 	#prep_vf_ovs
+	netfn=`readlink  /sys/bus/pci/devices/${netpf}/virtfn0`
+	blkfn=`readlink  /sys/bus/pci/devices/${blkpf}/virtfn0`
+	export netvf0=`basename $netfn`
+	export blkvf0=`basename $blkfn`
+
+	export testtype=blk
+
+	export pfslot=$blkpf
+	export vfslot=$blkvf0
+
+	loginfo $netvf0 pfslot: $pfslot vfslot: $vfslot
 	init_cleanup_env
 	start_vdpa_vm
 fi

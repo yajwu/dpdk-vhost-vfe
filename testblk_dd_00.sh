@@ -11,20 +11,20 @@ source  test_common.sh
 export testits=1
 
 function testcase_pre {
-	wait_vm
+	dd_pre
 }
 
 function testcase_run {
-	vm_check_running $hname $vmname || return 1
-	runsshcmd $vmip 'dd if=/dev/vda of=/dev/null bs=4k count=9999'
+	loginfo "no op"
 }
 
 function testcase_check {
-:
+	loginfo "call dd_check"
+	dd_check
 }
 
 function testcase_clean {
-:
+	dd_clean
 }
 
 if [ $sourced -eq 0 ]; then
