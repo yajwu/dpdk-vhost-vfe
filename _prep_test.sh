@@ -94,7 +94,11 @@ function start_vdpa_vm {
 
 function start_peer {
     loginfo start test env on $peer
-    runsshcmd_bg $peer '\(cd /images/testvfe \;  ./run.sh slave \; hostname\)'
+	if [[ $1 -eq "net" ]]; then
+		runsshcmd_bg $peer '\(cd /images/testvfe \;  ./run.sh slave \; hostname\)'
+	else
+		runsshcmd_bg $peer '\(cd /images/testvfe \;  ./run_blk.sh slave \; hostname\)'
+	fi
 }
 
 function stop_peer {

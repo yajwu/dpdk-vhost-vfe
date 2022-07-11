@@ -10,7 +10,7 @@ source  test_common.sh
 export testits=5
 
 function testcase_pre {
-	start_peer
+	start_peer net
 	ping_pre
 	# todo add check instead of sleep
 	sleep 20
