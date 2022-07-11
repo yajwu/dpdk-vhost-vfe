@@ -3,7 +3,7 @@
 ## all in one test, must be root
 
 	# run net all test
-	sudo ./run.sh
+	sudo ./run_net.sh
 
 	# run blk all test
 	sudo ./run_blk.sh

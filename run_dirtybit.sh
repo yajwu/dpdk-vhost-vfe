@@ -4,5 +4,5 @@
 
 export cases="testcase_ping_dirtybit.sh"
 #export cases="testcase_ping_restart_vdpa.sh"
-./run.sh
+./run_net.sh
 
