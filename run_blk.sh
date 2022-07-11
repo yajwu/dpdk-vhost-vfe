@@ -63,4 +63,4 @@ function run_main {
 	cat $testresult
 }
 
-run_main
+run_main $1
