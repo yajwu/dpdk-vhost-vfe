@@ -7,6 +7,12 @@ function stop_vdpa {
 	pkill dpdk-vdpa && sleep 3 && pgrep dpdk-vdpa && sleep 5
 	pgrep dpdk-vdpa && { logerr "kill dpdk-vdpa fail" && return 1; }
 
+	# work around to restart snap
+	loginfo "restart mlnx_snap on bf2"
+	runbf2cmd $bf2ip 'systemctl restart mlnx_snap'
+	runbf2cmd $bf2ip 'spdk_rpc.py bdev_null_create Null0 1024 512'
+	runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create --pf_id 0 --bdev_type spdk mlx5_0 --bdev Null0 --num_queues 1  --admin_q'
+
 	return 0
 }
 
