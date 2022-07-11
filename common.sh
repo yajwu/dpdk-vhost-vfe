@@ -5,7 +5,7 @@ shopt -s expand_aliases
 
 function loginfo {
     local cmd=$*
-    echo -e "\n[ `date` $hname ]" $cmd
+    echo -e "\n[ $(date "+%F-%H-%M-%S") $hname ]" $cmd
 	echo
 }
 
