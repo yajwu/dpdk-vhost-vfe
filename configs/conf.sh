@@ -37,5 +37,19 @@ if   [ `hostname` == "gen-l-vrt-440" ]; then
 	export vmethip=1.1.3.20
 
 	export peer=gen-l-vrt-439
+elif [ `hostname` == "gen-l-vrt-292" ]; then
+	export netpf=0000:5e:00.2
+
+	export bf2ip=gen-l-vrt-292-bf2
+	export p0ip=1.1.4.6
+
+	export vmname=gen-l-vrt-292-005-RH-8.2
+	export vmxml=${vmname}.xml
+	export vmip=gen-l-vrt-292-005
+	export devmac="00:00:00:00:00:11"
+	export vmethip=1.1.4.20
+	export vmeth=ens7
+
+	export peer=gen-l-vrt-293
 fi
 
