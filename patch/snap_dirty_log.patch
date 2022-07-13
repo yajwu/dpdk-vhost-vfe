@@ -1,0 +1,47 @@
+commit 3aa28cf4694b4d9c12a27c3915b8dfeb2e20b056
+Author: Armen Ratner <armeng@nvidia.com>
+Date:   Fri Jul 1 09:05:34 2022 -0500
+
+    fix aq cmd issue caused by miss break in snap_vaq_cmd_in_get_len and snap_vaq_cmd_out_get_len
+    fix aq cmd issue caused by wrong len returned in snap_vaq_cmd_in_get_len
+
+diff --git a/ctrl/snap_vq_adm.c b/ctrl/snap_vq_adm.c
+index 16192ba..92b14cb 100644
+--- a/ctrl/snap_vq_adm.c
++++ b/ctrl/snap_vq_adm.c
+@@ -69,12 +69,17 @@ static size_t snap_vaq_cmd_in_get_len(struct snap_vaq_cmd *cmd)
+ 			break;
+ 		default:
+ 			break;
+-		break;
+ 		}
++		break;
+ 	case SNAP_VQ_ADM_DP_TRACK_CTRL:
+ 		switch (hdr.command) {
+ 		case SNAP_VQ_ADM_DP_START_TRACK:
++			/*tmp fix, sge can be more than 1*/
++			ret = sizeof(struct snap_vq_adm_dirty_page_track_start) + sizeof(struct snap_vq_adm_sge);
++			break;
+ 		case SNAP_VQ_ADM_DP_STOP_TRACK:
++			ret = sizeof(struct snap_vq_adm_dirty_page_track_stop);
++			break;
+ 		case SNAP_VQ_ADM_DP_GET_MAP_PENDING_BYTES:
+ 		case SNAP_VQ_ADM_DP_REPORT_MAP:
+ 		default:
+@@ -104,8 +109,8 @@ static size_t snap_vaq_cmd_out_get_len(struct snap_vaq_cmd *cmd)
+ 			break;
+ 		default:
+ 			break;
+-		break;
+ 		}
++		break;
+ 	case SNAP_VQ_ADM_DP_TRACK_CTRL:
+ 		switch (hdr.command) {
+ 		case SNAP_VQ_ADM_DP_START_TRACK:
+@@ -515,4 +520,4 @@ size_t snap_vaq_cmd_get_total_len(struct snap_vq_cmd *cmd)
+ 	}
+ 
+ 	return total_len;
+-}
+\ No newline at end of file
++}

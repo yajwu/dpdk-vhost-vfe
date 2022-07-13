@@ -1,0 +1,28 @@
+diff --git a/ctrl/snap_virtio_blk_ctrl.c b/ctrl/snap_virtio_blk_ctrl.c
+index b2a36f6..b3a9d08 100644
+--- a/ctrl/snap_virtio_blk_ctrl.c
++++ b/ctrl/snap_virtio_blk_ctrl.c
+@@ -16,6 +16,7 @@
+ #include <linux/virtio_config.h>
+ #include <sys/mman.h>
+ #include "snap_vq_adm.h"
++#include "snap_vq_internal.h"
+ #include "snap_buf.h"
+ 
+ #define SNAP_VIRTIO_BLK_MODIFIABLE_FTRS ((1ULL << VIRTIO_F_VERSION_1) |\
+@@ -964,7 +965,14 @@ static void snap_virtio_blk_ctrl_queue_suspend(struct snap_virtio_ctrl_queue *vq
+ 		return;
+ 
+ 	snap_vq_suspend(vbq->q_impl);
+-	snap_info("ctrl %p qid %d is FLUSHING\n", vq->ctrl, vq->index);
++        const struct snap_virtio_queue_attr *vq_attr;
++        struct snap_virtio_ctrl *ctrl = vq->ctrl;
++        struct snap_vq *q_impl = vbq->q_impl;
++        vq_attr = ctrl->bar_ops->get_queue_attr(ctrl->bar_curr, vq->index);
++        if (!vq_attr->enable)
++                q_impl->state = 2;
++        else
++                snap_info("ctrl %p qid %d is FLUSHING\n", vq->ctrl, vq->index);
+ }
+ 
+ static bool snap_virtio_blk_ctrl_queue_is_suspended(struct snap_virtio_ctrl_queue *vq)

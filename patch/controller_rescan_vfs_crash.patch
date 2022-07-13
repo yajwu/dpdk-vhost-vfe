@@ -1,0 +1,41 @@
+diff --git a/libvirtnet/virtnet.c b/libvirtnet/virtnet.c
+index 99cbc87..75e9eb6 100755
+--- a/libvirtnet/virtnet.c
++++ b/libvirtnet/virtnet.c
+@@ -632,6 +632,17 @@ void virtnet_device_vfs_unload(struct virtnet_device *pf_dev)
+ 
+ 	virtnet_dev_close_wq(pf_dev->ctx, num_of_vfs);
+ 	free(pf_dev->vf_dev);
++        if (pf_dev->snap.ctrl->common.pending_flr) {
++                int timeout;
++                /* Waiting FLR done*/
++                for (timeout = 0 ; timeout < 100; timeout++) {
++                        sleep(1);
++                        if (!pf_dev->snap.ctrl->common.pending_flr)
++                                break;
++                }
++                if (timeout == 100)
++                        return;
++        }
+ 	snap_rescan_vfs(pf_dev->snap.ctrl->common.sdev->pci, 0);
+ 	log_info("PF(%d): Unload (%d) VFs finished", pf_dev->id, num_of_vfs);
+ }
+@@ -646,7 +657,17 @@ int virtnet_device_vfs_load(struct virtnet_device *pf_dev)
+ 	num_of_vfs = pf_dev->snap.ctrl->common.bar_curr->num_of_vfs;
+ 	if (!num_of_vfs)
+ 		return 0;
+-
++        if (pf_dev->snap.ctrl->common.pending_flr) {
++                int timeout;
++                /* Waiting FLR done*/
++                for (timeout = 0 ; timeout < 100; timeout++) {
++                        sleep(1);
++                        if (!pf_dev->snap.ctrl->common.pending_flr)
++                                break;
++                }
++                if (timeout == 100)
++                        return;
++        }
+ 	snap_rescan_vfs(pf_dev->snap.ctrl->common.sdev->pci, num_of_vfs);
+ 
+ 	successful_num_of_vfs = num_of_vfs;

@@ -1,0 +1,152 @@
+commit 673462a1c748c79ad510cee53058ba52fdb64c1c
+Author: Armen Ratner <armeng@nvidia.com>
+Date:   Sat Jul 2 20:27:39 2022 +0300
+
+    dirty_logging_controller fix
+
+diff --git a/libvirtnet/virtnet_lm.c b/libvirtnet/virtnet_lm.c
+index b2e1f77..cc976cd 100644
+--- a/libvirtnet/virtnet_lm.c
++++ b/libvirtnet/virtnet_lm.c
+@@ -366,7 +366,7 @@ int virtnet_dirty_page_logging_start(struct virtnet_device *dev,
+ 				     struct snap_vq_cmd *cmd)
+ {
+ 	struct snap_vq_adm_dirty_page_track_start *dpt = NULL;
+-	struct virtnet_migration_log log = {};
++	struct virtnet_migration_log *log = malloc(1024);/*tmp fix*/
+ 	struct virtnet_device *vf_dev = NULL;
+ 	uint16_t vf_idx = 0;
+ 	size_t sge_len = 0;
+@@ -382,12 +382,12 @@ int virtnet_dirty_page_logging_start(struct virtnet_device *dev,
+ 
+ 	switch (dpt->track_mode) {
+ 	case VIRTIO_M_DIRTY_TRACK_PUSH_BITMAP:
+-		log.mode = DIRTY_BIT;
+-		log.flag = DIRTY_BMAP_REMOTE;
++		log->mode = DIRTY_BIT;
++		log->flag = DIRTY_BMAP_REMOTE;
+ 		break;
+ 	case VIRTIO_M_DIRTY_TRACK_PUSH_BYTEMAP:
+-		log.mode = DIRTY_BYTE;
+-		log.flag = DIRTY_BMAP_REMOTE;
++		log->mode = DIRTY_BYTE;
++		log->flag = DIRTY_BMAP_REMOTE;
+ 		break;
+ 	case VIRTIO_M_DIRTY_TRACK_PULL_BITMAP:
+ 	case VIRTIO_M_DIRTY_TRACK_PULL_BYTEMAP:
+@@ -395,22 +395,22 @@ int virtnet_dirty_page_logging_start(struct virtnet_device *dev,
+ 		goto destroy_mkey;
+ 	}
+ 
+-	log.guest_page_size = dpt->vdev_host_page_size;\
++	log->guest_page_size = dpt->vdev_host_page_size;\
+ 	sge_len = snap_vaq_cmd_get_total_len(cmd) -
+ 		  (sizeof(struct snap_virtio_adm_cmd_hdr) +
+ 		  sizeof(*dpt));
+ 
+-	log.num_sge = sge_len/sizeof(struct snap_vq_adm_sge);
+-	log.start_range_addr = dpt->vdev_host_range_addr;
+-	memcpy(log.sge, dpt->sges, log.num_sge);
++	log->num_sge = sge_len/sizeof(struct snap_vq_adm_sge);
++	log->start_range_addr = dpt->vdev_host_range_addr;
++	memcpy(log->sge, dpt->sges, log->num_sge*sizeof(struct dirty_bmap_sge));
+ 
+-	ret = virtnet_dirtymap_log_check(vf_dev, &log);
++	ret = virtnet_dirtymap_log_check(vf_dev, log);
+ 	if (ret)
+ 		goto err_out;
+ 
+-	virtnet_dirtymap_save_log_attr(vf_dev, &log);
++	virtnet_dirtymap_save_log_attr(vf_dev, log);
+ 
+-	ret = virtnet_dirtymap_create_mkey(vf_dev, &log);
++	ret = virtnet_dirtymap_create_mkey(vf_dev, log);
+ 	if (ret)
+ 		goto restore_lattr;
+ 
+@@ -421,8 +421,9 @@ int virtnet_dirty_page_logging_start(struct virtnet_device *dev,
+ 	dev->status |= VIRTNET_DEV_LOGGING_STARTED;
+ 	log_info("dev(%s): start logging, flag=0x%x, mode=0x%x, "
+ 		 "guest_page_size=0x%x, num_sge=0x%x",
+-		 dev->snap.pci->pci_number, log.flag, log.mode,
+-		 log.guest_page_size, log.num_sge);
++		 dev->snap.pci->pci_number, log->flag, log->mode,
++		 log->guest_page_size, log->num_sge);
++	virtnet_vf_put(vf_dev);
+ 
+ 	return 0;
+ 
+@@ -433,6 +434,7 @@ int virtnet_dirty_page_logging_start(struct virtnet_device *dev,
+ err_out:
+ 	log_error("dev(%s): Failed to start logging",
+ 		  dev->snap.pci->pci_number);
++	virtnet_vf_put(vf_dev);
+ 
+ 	return SNAP_VIRTIO_ADM_STATUS_DEVICE_INTERNAL_ERR;
+ }
+@@ -462,6 +464,7 @@ int virtnet_dirty_page_logging_stop(struct virtnet_device *dev,
+ 
+ 	dev->status &= ~VIRTNET_DEV_LOGGING_STARTED;
+ 	log_info("dev(%s): Stop logging", dev->snap.pci->pci_number);
++	virtnet_vf_put(vf_dev);
+ 
+ 	return 0;
+ }
+diff --git a/libvirtnet/virtnet_lm.h b/libvirtnet/virtnet_lm.h
+index 633e1bb..4dec179 100644
+--- a/libvirtnet/virtnet_lm.h
++++ b/libvirtnet/virtnet_lm.h
+@@ -56,6 +56,8 @@ enum virtio_lm_status {
+ 	VIRTIO_LM_STATUS_FREEZED = 3,
+ };
+ 
++struct virtnet_device *virtnet_vf_get(struct virtnet_device *pf_dev,
++                                      uint16_t vf_idx);
+ /**
+  * dirty memory map mode
+  *
+diff --git a/libvirtnet/virtnet_vq.c b/libvirtnet/virtnet_vq.c
+index 7b4cf29..db8f7f4 100644
+--- a/libvirtnet/virtnet_vq.c
++++ b/libvirtnet/virtnet_vq.c
+@@ -490,7 +490,8 @@ void virtnet_vqs_destroy(struct virtnet_device *dev)
+ {
+ 	virtnet_admin_vq_destroy(dev);
+ 	virtnet_ctrl_vq_destroy(dev);
+-	virtnet_eth_vqs_destroy(dev, dev->num_eth_queues);
++	if (dev->num_eth_queues)
++		virtnet_eth_vqs_destroy(dev, dev->num_eth_queues);
+ 
+ 	log_debug("Destroy %d ETH VQs, %d Ctrl VQ, %d Admin VQ",
+ 		  dev->num_eth_queues, !!dev->ctrl_vq.q, !!dev->admin_vq.q);
+@@ -510,7 +511,8 @@ int virtnet_vqs_create(struct virtnet_device *dev)
+ 	q_attrs = dev->snap.vq_attr;
+ 	enabled_queues = dev->snap.ctrl->common.enabled_queues;
+ 	num_eth_queues = enabled_queues;
+-
++	
++	/*need fix, from spec 2N + 1 adminq (or 2N in case VIRTIO_NET_F_CTRL_VQ is not set)*/
+ 	if (virtnet_device_has_feature(dev, VIRTIO_NET_F_CTRL_VQ) &&
+ 	    virtnet_driver_has_feature(dev, VIRTIO_NET_F_CTRL_VQ)) {
+ 		/* Queue index starts with 0, max_queues starts with 1. So,
+@@ -524,6 +526,7 @@ int virtnet_vqs_create(struct virtnet_device *dev)
+ 
+ 	if (virtnet_device_has_feature(dev, VIRTIO_F_ADMIN_VQ) &&
+ 	    virtnet_driver_has_feature(dev, VIRTIO_F_ADMIN_VQ)) {
++		/*need fix, from spec 2N + 1 adminq (or 2N in case VIRTIO_NET_F_CTRL_VQ is not set)*/
+ 		admin_queue_idx = dev->snap.dev_attr->vattr.max_queues - 1;
+ 		admin_queue = q_attrs[admin_queue_idx].vattr.enable;
+ 	}
+@@ -556,10 +559,10 @@ int virtnet_vqs_create(struct virtnet_device *dev)
+ 		}
+ 		num_eth_queues -= 1;
+ 	}
+-
++	/*to fix: need align w/ spec, to use mq to decide num eth queue*/
+ 	/* N pairs of tx/rx queues, 1 ctrl queue*/
+ 	num_eth_queues = num_eth_queues % 2 ? num_eth_queues - 1 :
+-			 num_eth_queues - 2;
++			 num_eth_queues;
+ 
+ 	log_debug("eth_vqs %d, enabled_vqs %d, max_vqs %d",
+ 		 num_eth_queues, enabled_queues,

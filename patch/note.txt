@@ -1,0 +1,54 @@
+[SoC Drivers] Bug SW #3129171: Controller crash in snap_free_pci_bar() function | Assignee: Bodong Wang | Status: Assigned
+[SoC PLATFORM] Bug SW #3128459: [vfe]  virtnet_controller crash when virtio PF FLR | Assignee: Bodong Wang | Status: Assigned
+
+Temp Fix:
+controller_rescan_vfs_crash.patch
+
+#0  0x0000fffff7b47238 in raise () from /usr/lib64/libc.so.6
+#1  0x0000fffff7b488b0 in abort () from /usr/lib64/libc.so.6
+#2  0x0000fffff7b8717c in __libc_message () from /usr/lib64/libc.so.6
+#3  0x0000fffff7b8f1ec in _int_free () from /usr/lib64/libc.so.6
+#4  0x0000fffff7f40c1c in snap_free_pci_bar (pci=0xffffd80000b8) at snap.c:116
+#5  0x0000fffff7f40d6c in snap_free_virtual_functions (pf=0xffffd8000078) at snap.c:153
+#6  0x0000fffff7f47e80 in snap_rescan_vfs (pf=0xffffd8000078, num_vfs=0) at snap.c:3390
+#7  0x0000000000413748 in virtnet_device_vfs_unload ()
+#8  0x00000000004382a4 in virtnet_device_update_vfs ()
+#9  0x00000000004383b8 in virtnet_device_vf_wq ()
+#10 0x0000fffff7c9fd38 in start_thread () from /usr/lib64/libpthread.so.0
+#11 0x0000fffff7bf1690 in thread_start () from /usr/lib64/libc.so.6
+
+#0  0x0000fffff7f54190 in snap_emulation_device_create (sdev=sdev@entry=0xffffd8000a70, attr=attr@entry=0x49fd80) at snap.c:3086
+#1  0x0000fffff7f54e04 in snap_open_device (sctx=sctx@entry=0x47cd80, attr=attr@entry=0x49fd80) at snap.c:3471
+#2  0x0000fffff7f80878 in snap_virtio_ctrl_change_status (ctrl=0x49fca0) at snap_virtio_common_ctrl.c:444
+#3  snap_virtio_ctrl_progress (ctrl=0x49fca0) at snap_virtio_common_ctrl.c:888
+#4  0x000000000041672c in virtnet_device_event_cb ()
+#5  0x0000000000423dbc in virtnet_epoll_wait ()
+#6  0x000000000043857c in virtnet_device_events_handler ()
+#7  0x0000fffff7cbfc48 in start_thread () from /usr/lib64/libpthread.so.0
+#8  0x0000fffff7c11600 in thread_start () from /usr/lib64/libc.so.6
+
+
+[SoC PLATFORM] Bug SW #3130354: Controller crash in virtnet_epoll_wait() function | Assignee: Bodong Wang | Status: Assigned
+Temp Fix:
+controller_update_vfs_crash.patch 
+introduced by controller_dirty_log.patch
+
+(gdb) bt
+#0  0x0000000000000000 in ?? ()
+#1  0x0000000000423c14 in virtnet_epoll_wait ()
+#2  0x0000000000438018 in virtnet_device_events_handler (ctx=0x477e00) at virtnet_threads.c:189
+#3  0x0000fffff7c8dd38 in start_thread () from /lib64/libpthread.so.0
+#4  0x0000fffff7bdf690 in thread_start () from /lib64/libc.so.6
+
+
+
+snap_pending_reset_detected.patch
+[2022-07-08 06:19:24.578913] spdk_emu_mgr.c: 766:spdk_emu_ctx_destroy_end: *NOTICE*: Controller VblkEmu0pf0vf0 was destroyed
+virtio controller reset detected
+virtio controller reset detected
+virtio controller reset detected
+virtio controller reset detected
+virtio controller reset detected
+virtio controller reset detected
+
+

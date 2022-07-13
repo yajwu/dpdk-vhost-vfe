@@ -1,0 +1,16 @@
+diff --git a/libvirtnet/virtnet_lm.c b/libvirtnet/virtnet_lm.c
+index b2e1f77..a35fe36 100644
+--- a/libvirtnet/virtnet_lm.c
++++ b/libvirtnet/virtnet_lm.c
+@@ -449,8 +451,10 @@ int virtnet_dirty_page_logging_stop(struct virtnet_device *dev,
+ 	vf_idx = dpt->vdev_id - 1;
+ 	vf_dev = virtnet_vf_get(dev, vf_idx);
+ 
+-	if (!(dev->status & VIRTNET_DEV_LOGGING_STARTED))
++	if (!(dev->status & VIRTNET_DEV_LOGGING_STARTED)) {
++	        virtnet_vf_put(vf_dev);
+ 		return 0;
++        }
+ 
+ 	ret = virtnet_vqs_modify(vf_dev, VQ_LOGGING_STOP);
+ 	if (ret)
