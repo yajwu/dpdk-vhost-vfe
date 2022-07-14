@@ -3,17 +3,20 @@
 (return 0 2>/dev/null) && sourced=1 || sourced=0
 [ $sourced -eq 0 ] && . configs/conf.sh && . common.sh && . /mswg/projects/fw/fw_ver/hca_fw_tools/.fwvalias
 
-function stop_vdpa {
-	pkill dpdk-vdpa && sleep 3 && pgrep dpdk-vdpa && sleep 5
-	pgrep dpdk-vdpa && { logerr "kill dpdk-vdpa fail" && return 1; }
-
-	if [[ $testtyp == "blk" ]]; then
+function restart_mlnx_snap {
+	if [[ $testtype == "blk" ]]; then
 		# work around to restart snap
-		loginfo "restart mlnx_snap on bf2"
+		loginfo "restart mlnx_snap on bf2 as W.A."
 		runbf2cmd $bf2ip 'systemctl restart mlnx_snap'
 		runbf2cmd $bf2ip 'spdk_rpc.py bdev_null_create Null0 1024 512'
 		runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create --pf_id 0 --bdev_type spdk mlx5_0 --bdev Null0 --num_queues 1  --admin_q'
 	fi
+}
+
+function stop_vdpa {
+	pkill dpdk-vdpa && sleep 3 && pgrep dpdk-vdpa && sleep 5
+	pgrep dpdk-vdpa && { logerr "kill dpdk-vdpa fail" && return 1; }
+
 
 	return 0
 }
@@ -61,6 +64,8 @@ function prep_sw {
 
 function start_vdpa {
 	loginfo start vdpa
+
+	restart_mlnx_snap
 
 	export vdpalog=$logdir/vdpa.log
 	. ./vdpacmd
