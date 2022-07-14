@@ -31,7 +31,7 @@ function runsshcmd {
 	local serip=$1
 	shift
     local cmd=$*
-    loginfo "run ssh: " $serip $cmd
+    loginfo "sshpass -p 3tango ssh root@$serip $cmd"
     eval sshpass -p 3tango ssh root@$serip "$cmd"
 }
 
@@ -39,7 +39,7 @@ function runsshcmd_bg {
 	local serip=$1
 	shift
     local cmd=$*
-    loginfo "run ssh bg: " $serip $cmd
+    loginfo "bg: sshpass -p 3tango ssh root@$serip $cmd"
     eval sshpass -p 3tango ssh root@$serip $cmd &
 }
 
@@ -47,7 +47,7 @@ function runbf2cmd {
 	local serip=$1
 	shift
     local cmd=$*
-    loginfo "run bf2 ssh: " $serip $cmd
+    loginfo "run bf2: sshpass -p centos ssh root@$serip $cmd"
     eval sshpass -p centos ssh root@$serip "$cmd"
 }
 
