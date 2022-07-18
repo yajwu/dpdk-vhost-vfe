@@ -14,8 +14,8 @@ function restart_mlnx_snap {
 }
 
 function stop_vdpa {
-	pkill dpdk-vdpa && sleep 3 && pgrep dpdk-vdpa && sleep 5
-	pgrep dpdk-vdpa && { logerr "kill dpdk-vdpa fail" && return 1; }
+	pkill dpdk-vfe-vdpa && sleep 3 && pgrep dpdk-vfe-vdpa && sleep 5
+	pgrep dpdk-vfe-vdpa && { logerr "kill dpdk-vfe-vdpa fail" && return 1; }
 
 
 	return 0
@@ -65,19 +65,19 @@ function prep_sw {
 function start_vdpa {
 	loginfo start vdpa
 
-	restart_mlnx_snap
+	#restart_mlnx_snap
 
 	export vdpalog=$logdir/vdpa.log
 	. ./vdpacmd
-	sleep 2 && loginfo "vdpa process `pgrep dpdk-vdpa`"
-	pgrep dpdk-vdpa || { logerr "bootup dpdk-vdpa fail" ; exit 1; }
+	sleep 2 && loginfo "vdpa process `pgrep dpdk-vfe-vdpa`"
+	pgrep dpdk-vfe-vdpa || { logerr "bootup dpdk-vfe-vdpa fail" ; exit 1; }
 
 
-	runcmd python sw/dpdk/examples/vdpa/vhostmgmt mgmtpf -a ${pfslot}
+	runcmd python sw/dpdk/app/vfe-vdpa/vhostmgmt mgmtpf -a ${pfslot}
 	## add vf on bf2
 	[[ ${testtype} == "blk" ]] && runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id 0 --bdev_type spdk --bdev Null0'
 	sleep 1
-	runcmd python sw/dpdk/examples/vdpa/vhostmgmt vf -a ${pfslot} -v 1
+	runcmd python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a ${vfslot}
 
 	[[ ${testtype} == "net" ]] && runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac
 

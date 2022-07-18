@@ -11,11 +11,11 @@ function testcase_pre {
 }
 
 function testcase_run {
-	loginfo "kill dpdk-vdpa"
+	loginfo "kill dpdk-vfe-vdpa"
 	stop_vdpa || { logerr ">>" && return 1; }
 
 	start_vdpa
-	sleep 5 && loginfo "vdpa process `pgrep dpdk-vdpa`"
+	sleep 5 && loginfo "vdpa process `pgrep dpdk-vfe-vdpa`"
 }
 
 function testcase_check {

@@ -10,6 +10,7 @@ source _prep_test.sh
 #set -x
 function run_main {
 	export testtype=net
+	[[ -d $logdir/testnet ]] || mkdir $logdir/testnet
 
 	init_cleanup_env
 	info_env

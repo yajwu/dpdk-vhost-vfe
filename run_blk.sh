@@ -10,6 +10,7 @@ source _prep_test.sh
 
 function run_main {
 	export testtype=blk
+	[[ -d $logdir/testblk ]] || mkdir $logdir/testblk
 
 	init_cleanup_env
 	info_env
@@ -26,7 +27,7 @@ function run_main {
 	fi
 
 # run case
-	[ -z $cases ] && cases=`ls testblk*`
+	[ -z $cases ] && cases=`ls testblk/*`
 
 	export testresult=$logdir/result
 	for tc in $cases; do
