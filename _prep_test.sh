@@ -6,7 +6,7 @@
 function restart_mlnx_snap {
 	if [[ $testtype == "blk" ]]; then
 		# work around to restart snap
-		loginfo "restart mlnx_snap on bf2 as W.A."
+		loginfo "restart mlnx_snap on bf2"
 		runbf2cmd $bf2ip 'systemctl restart mlnx_snap'
 		runbf2cmd $bf2ip 'spdk_rpc.py bdev_null_create Null0 1024 512'
 		runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create --pf_id 0 --bdev_type spdk mlx5_0 --bdev Null0 --num_queues 1  --admin_q'
@@ -38,6 +38,7 @@ function init_cleanup_env {
 	loginfo init cleanup_env
 	cleanup_env
 	runcmd systemctl restart libvirtd
+	restart_mlnx_snap
 }
 
 function post_cleanup_env {
