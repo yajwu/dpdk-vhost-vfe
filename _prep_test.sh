@@ -77,10 +77,11 @@ function start_vdpa {
 	runcmd python sw/dpdk/app/vfe-vdpa/vhostmgmt mgmtpf -a ${pfslot}
 	## add vf on bf2
 	[[ ${testtype} == "blk" ]] && runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id 0 --bdev_type spdk --bdev Null0'
+	sleep 4
+	[[ ${testtype} == "net" ]] && runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac
 	sleep 1
 	runcmd python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a ${vfslot}
 
-	[[ ${testtype} == "net" ]] && runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac
 
 }
 
