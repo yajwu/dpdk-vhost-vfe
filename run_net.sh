@@ -27,7 +27,7 @@ function run_main {
 	fi
 
 # run case
-	[ -z $cases ] && cases=`ls test${testtype}*`
+	[ -z $cases ] && cases=`ls testnet/*`
 
 	export testresult=$logdir/result
 	for tc in $cases; do
