@@ -22,6 +22,7 @@ export vmethip=1.1.2.20
 export devmac="e4:11:c6:d3:45:f3"
 
 export peer=gen-l-vrt-440
+export peerbf2=gen-l-vrt-316-bf
 export hname=`hostname`
 
 #export cases="testcase_suspend_resume.sh"
@@ -37,6 +38,7 @@ if   [ `hostname` == "gen-l-vrt-440" ]; then
 	export vmethip=1.1.3.20
 
 	export peer=gen-l-vrt-439
+	export peerbf2=gen-l-vrt-316-bf
 elif [ `hostname` == "gen-l-vrt-292" ]; then
 	export netpf=0000:5e:00.2
 
@@ -51,5 +53,6 @@ elif [ `hostname` == "gen-l-vrt-292" ]; then
 	export vmeth=ens7
 
 	export peer=gen-l-vrt-293
+	unset peerbf2
 fi
 

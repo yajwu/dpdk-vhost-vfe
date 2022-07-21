@@ -18,13 +18,13 @@ function testcase_pre {
 
 function testcase_run {
 	runcmd_bg virsh migrate --verbose --live --persistent $vmname qemu+ssh://$peer/system  --unsafe
-	sleep 20
+	sleep 10
 	runcmd virsh list --all
 	vm_check_running $peer $vmname || return 1
 	ping_check || return 1
 
 	runsshcmd_bg $peer virsh migrate --verbose --live --persistent $vmname qemu+ssh://$hname/system  --unsafe
-	sleep 20
+	sleep 10
 	runsshcmd $peer virsh list --all
 	vm_check_running $hname $vmname || return 1
 	ping_check || return 1

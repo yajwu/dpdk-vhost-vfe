@@ -27,7 +27,7 @@ function ping_pre {
 
 function ping_check {
 	local seq1=`tail -n 1 $testlog | egrep -o 'icmp_seq=.*time=' | cut -d ' '  -f 1 | cut -d "=" -f 2`
-	sleep 2
+	sleep 6
 	local seq2=`tail -n 1 $testlog | egrep -o 'icmp_seq=.*time=' | cut -d ' '  -f 1 | cut -d "=" -f 2`
 	if [[ $seq2 -le $seq1 ]]; then
 		logerr "ping check fail: $seq1 vs $seq2"
