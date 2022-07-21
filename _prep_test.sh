@@ -48,9 +48,9 @@ function post_cleanup_env {
 
 function info_env {
 	loginfo "==== info ===="
-	flq | tee -a $logdir/info
+	#flq | tee -a $logdir/info
 	#systemctl status libvirtd | tee -a $logdir/info
-	$qemuapp --version | tee -a $logdir/info
+	#$qemuapp --version | tee -a $logdir/info
 }
 
 function prep_vf_ovs {
