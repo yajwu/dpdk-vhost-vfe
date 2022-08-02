@@ -21,7 +21,7 @@ function clone_qemu_gerrit {
 	pushd sw
 	git clone "http://l-gerrit.mtl.labs.mlnx:8080/upstream/qemu" qemu.gerrit
 	pushd qemu.gerrit
-	git fetch "http://l-gerrit.mtl.labs.mlnx:8080/upstream/qemu" refs/changes/56/506856/8 && git checkout FETCH_HEAD
+	git fetch "http://l-gerrit.mtl.labs.mlnx:8080/upstream/qemu" refs/changes/93/510893/5 && git checkout FETCH_HEAD
 	git submodule update --init --recursive
 	popd
 	popd
