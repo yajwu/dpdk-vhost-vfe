@@ -20,14 +20,14 @@ function ping_pre {
 	runsshcmd $vmip ethtool -l $vmeth
 
 	#runsshcmd_bg "$vmip ping $testbed_br_ip -i 0.6 |tee -a $testlog"
-	runcmd_bg "ping $vmethip -i 0.6 |tee -a $testlog"
+	runcmd_bg "ping $vmethip -i 0.5 |tee -a $testlog"
 	export ping_pid=$!
 	sleep 2
 }
 
 function ping_check {
 	local seq1=`tail -n 1 $testlog | egrep -o 'icmp_seq=.*time=' | cut -d ' '  -f 1 | cut -d "=" -f 2`
-	sleep 6
+	sleep 8
 	local seq2=`tail -n 1 $testlog | egrep -o 'icmp_seq=.*time=' | cut -d ' '  -f 1 | cut -d "=" -f 2`
 	if [[ $seq2 -le $seq1 ]]; then
 		logerr "ping check fail: $seq1 vs $seq2"
@@ -44,10 +44,10 @@ function dd_check {
 	local seq2=`tail -n 1 $testlog | egrep 'seq' | cut -d " " -f 2`
 	loginfo seq1 $seq1 seq2 $seq2
 	if [[ $seq2 -le $seq1 ]]; then
-		logerr "ping check fail: $seq1 vs $seq2"
+		logerr "dd check fail: $seq1 vs $seq2"
 		return 1
 	else
-		loginfo " $seq2 vs $seq1, ping seq increase. check pass"
+		loginfo " $seq2 vs $seq1, dd seq increase. check pass"
 		return 0
 	fi
 
@@ -64,13 +64,13 @@ function dd_pre {
 function vm_check_running {
 	local vms=`runsshcmd $1 virsh list --state-running --name`
 	runsshcmd $1 virsh list --all
-	[[ "$vms" == *"$2"* ]] || ( logerr "vm_check_running fail: $1 $2" && return 1)
+	[[ "$vms" == *"$2"* ]] || { logerr "vm_check_running fail: $1 $2" && return 1; }
 }
 
 function vm_check_down {
 	local vms=`runsshcmd $1 virsh list --state-shutoff --name`
 	runsshcmd $1 virsh list --all
-	[[ "$vms" == *"$2"* ]] || ( logerr "vm_check_down fail: $1 $2" && return 1)
+	[[ "$vms" == *"$2"* ]] || { logerr "vm_check_down fail: $1 $2" && return 1 ;}
 }
 
 function ping_clean {
