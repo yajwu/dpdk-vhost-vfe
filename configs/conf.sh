@@ -56,34 +56,35 @@ elif [ `hostname` == "gen-l-vrt-292" ]; then
 	unset peerbf2
 elif [ `hostname` == "gen-l-vrt-294" ]; then
 	export netpf=0000:af:00.2
+	export blkpf=0000:af:00.3
 
-	export bf2ip=192.168.100.2
+	export bf2ip=gen-l-vrt-294-bf
 	export p0ip=1.1.5.6
 
 	#export vmname=gen-l-vrt-292-005-RH-8.2
 	#export vmxml=${vmname}.xml
 	#export vmip=gen-l-vrt-292-005
-	export devmac="00:00:00:00:00:22"
-	#export vmethip=1.1.5.20
+	export devmac="00:00:00:00:22:00"
+	export vmethip=1.1.5.20
 	#export vmeth=ens7
 
-	#export peer=gen-l-vrt-293
+	export peer=gen-l-vrt-295
 	unset peerbf2
 elif [ `hostname` == "gen-l-vrt-295" ]; then
 	export netpf=0000:af:00.2
+	export blkpf=0000:af:00.3
 
-	export bf2ip=192.168.100.2
-	export p0ip=1.1.5.6
+	export bf2ip=gen-l-vrt-295-bf
+	export p0ip=1.1.7.6
 
-	#export vmname=gen-l-vrt-292-005-RH-8.2
-	#export vmxml=${vmname}.xml
-	#export vmip=gen-l-vrt-292-005
-	export devmac="00:00:00:00:00:33"
-	#export vmethip=1.1.5.20
-	#export vmeth=ens7
-#
-#	export peer=gen-l-vrt-293
-	unset peerbf2
-	unset blkpf
+	export vmname=gen-l-vrt-295-005-CentOS-7.4
+	export vmxml=${vmname}.xml
+	export vmip=gen-l-vrt-292-005
+	export devmac="00:00:00:00:33:00"
+	export vmethip=1.1.7.20
+	export vmeth=eth1
+
+	export peer=gen-l-vrt-294
+	export peerbf2=gen-l-vrt-294-bf
 fi
 
