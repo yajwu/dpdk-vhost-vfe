@@ -10,23 +10,30 @@ source  test_common.sh
 export testits=5
 
 function testcase_pre {
+	runsshcmd $peer virsh shutdown $vmname
 	start_peer blk
 	dd_pre
+
+	runcmd virsh list --all
+	runsshcmd $peer virsh list --all
+	vm_check_running $hname $vmname || return 1
+	vm_check_down $peer $vmname || return 1
+
 	# todo add check instead of sleep
-	sleep 20
+	sleep 30
 }
 
 function testcase_run {
 	runcmd_bg virsh migrate --verbose --live --persistent $vmname qemu+ssh://$peer/system  --unsafe
-	sleep 12
-	runcmd virsh list --all
+	sleep 15
 	vm_check_running $peer $vmname || return 1
+	vm_check_down $hname $vmname || return 1
 	dd_check || return 1
 
 	runsshcmd_bg $peer virsh migrate --verbose --live --persistent $vmname qemu+ssh://$hname/system  --unsafe
-	sleep 12
-	runsshcmd $peer virsh list --all
+	sleep 15
 	vm_check_running $hname $vmname || return 1
+	vm_check_down $peer $vmname || return 1
 	dd_check || return 1
 }
 
