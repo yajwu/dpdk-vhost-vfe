@@ -117,9 +117,9 @@
 <qemu:arg value='-chardev'/>
 <qemu:arg value='socket,id=char0,path=/tmp/vf-0000:5e:04.4,server=on'/>
 <qemu:arg value='-netdev'/>
-<qemu:arg value='type=vhost-user,id=vdpa,chardev=char0,queues=1'/>
+<qemu:arg value='type=vhost-user,id=vdpa,chardev=char0,queues=4'/>
 <qemu:arg value='-device'/>
-<qemu:arg value='virtio-net-pci,netdev=vdpa,mac=00:00:00:00:00:11,page-per-vq=on,rx_queue_size=512,tx_queue_size=512,mq=on'/>
+<qemu:arg value='virtio-net-pci,netdev=vdpa,mac=e4:11:c6:d3:45:55,page-per-vq=on,rx_queue_size=512,tx_queue_size=512,mq=on,vectors=66'/>
 </qemu:commandline>
 </domain>
 

@@ -25,6 +25,17 @@ function ping_pre {
 	sleep 2
 }
 
+function ping_pre_without_start {
+	loginfo wait vm bootup ...
+
+	wait_vm
+	runsshcmd $vmip systemctl stop NetworkManager
+	runsshcmd $vmip ifconfig $vmeth ${vmethip}/24
+	runsshcmd $vmip ifconfig $vmeth
+	runsshcmd $vmip ethtool -l $vmeth
+	sleep 2
+}
+
 function ping_check {
 	local seq1=`tail -n 1 $testlog | egrep -o 'icmp_seq=.*time=' | cut -d ' '  -f 1 | cut -d "=" -f 2`
 	sleep 6

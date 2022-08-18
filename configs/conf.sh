@@ -43,14 +43,16 @@ elif [ `hostname` == "gen-l-vrt-292" ]; then
 	export netpf=0000:5e:00.2
 
 	export bf2ip=gen-l-vrt-292-bf2
-	export p0ip=1.1.4.6
+	export p0eth=enp94s0f0
+	export p0ip=1.1.6.6
 
 	export vmname=gen-l-vrt-292-005-RH-8.2
 	export vmxml=${vmname}.xml
 	export vmip=gen-l-vrt-292-005
-	export devmac="00:00:00:00:00:11"
-	export vmethip=1.1.4.20
+	export devmac="e4:11:c6:d3:45:55"
+	export vmethip=1.1.6.20
 	export vmeth=ens7
+	export vmqps=4
 
 	export peer=gen-l-vrt-293
 	unset peerbf2
