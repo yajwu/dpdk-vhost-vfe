@@ -18,7 +18,7 @@ function restart_controller {
 		# work around to restart snap
 		loginfo "remove !!!!restart virtio-net-controller on bf2 as W.A."
 		runbf2cmd $bf2ip 'systemctl restart virtio-net-controller'
-		runcmd sleep 20
+		runcmd sleep 10
 		runbf2cmd $bf2ip 'virtnet modify -p 0 device -f 0x22300470028'
 	fi
 }
@@ -77,7 +77,7 @@ function start_vdpa {
 	loginfo start vdpa
 
 	#restart_mlnx_snap
-	#restart_controller
+	restart_controller
 
 	export vdpalog=$logdir/vdpa.log
 	. ./vdpacmd
