@@ -25,6 +25,8 @@ export peer=gen-l-vrt-440
 export peerbf2=gen-l-vrt-316-bf
 export hname=`hostname`
 
+export numvfs=16
+
 #export cases="testcase_suspend_resume.sh"
 
 if   [ `hostname` == "gen-l-vrt-440" ]; then
