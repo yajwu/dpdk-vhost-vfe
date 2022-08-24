@@ -64,6 +64,7 @@ elif [ `hostname` == "gen-l-vrt-294" ]; then
 
 	export bf2ip=gen-l-vrt-294-bf
 	export p0ip=1.1.5.6
+	export p0eth=ens4f0np0
 
 	#export vmname=gen-l-vrt-292-005-RH-8.2
 	#export vmxml=${vmname}.xml
@@ -80,10 +81,11 @@ elif [ `hostname` == "gen-l-vrt-295" ]; then
 
 	export bf2ip=gen-l-vrt-295-bf
 	export p0ip=1.1.7.6
+	export p0eth=ens4f0np0
 
 	export vmname=gen-l-vrt-295-005-CentOS-7.4
 	export vmxml=${vmname}.xml
-	export vmip=gen-l-vrt-292-005
+	export vmip=gen-l-vrt-295-005
 	export devmac="00:00:00:00:33:00"
 	export vmethip=1.1.7.20
 	export vmeth=eth1
