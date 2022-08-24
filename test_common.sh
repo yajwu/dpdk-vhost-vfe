@@ -2,7 +2,7 @@
 function wait_vm {
 	runsshcmd $vmip date && return 0
 
-	sleep 20
+	sleep 15
 	for i in {1..10};do
 		runsshcmd $vmip date
 		[[ $? -eq 0 ]] && break

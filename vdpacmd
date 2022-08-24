@@ -1,13 +1,13 @@
 #!/bin/bash -x
 
 [ -n "$vdpalog" ] || {
-sudo sw/dpdk/build/app/dpdk-vfe-vdpa -a 0000:00:00.0 --log-level=.,8 -- --client --iface /tmp/vf- ;
+sudo sw/dpdk/build/app/dpdk-vfe-vdpa -a 0000:00:00.0 --log-level=.,8 --vfio-vf-token=cdc786f0-59d4-41d9-b554-fed36ff5e89f -- --client --iface /tmp/vf- | tee /tmp/vdpa.log;
 exit 0;
 }
 
 loginfo dpdk-vfe-vdpa $pfslot $vfslot
 # background run
 tail -f /dev/null | \
-sw/dpdk/build/app/dpdk-vfe-vdpa -a 0000:00:00.0 --log-level=.,8 -- --client --iface /tmp/vf- \
+sw/dpdk/build/app/dpdk-vfe-vdpa -a 0000:00:00.0 --log-level=.,8 --vfio-vf-token=cdc786f0-59d4-41d9-b554-fed36ff5e89f -- --client --iface /tmp/vf- \
  >> $vdpalog 2>&1 &
 

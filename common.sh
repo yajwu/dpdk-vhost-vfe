@@ -56,6 +56,7 @@ timestamp=$(date +"%Y-%m-%d_%H_%M")
 
 export logdir=`pwd`/logs/${timestamp}
 export logfile=${logdir}/$(basename ${0}).log
+export testresult=$logdir/result
 
 ln -nsf $logdir latest
 

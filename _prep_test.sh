@@ -18,15 +18,20 @@ function restart_controller {
 		# work around to restart snap
 		loginfo "remove !!!!restart virtio-net-controller on bf2 as W.A."
 		runbf2cmd $bf2ip 'systemctl restart virtio-net-controller'
-		runcmd sleep 10
+		runcmd sleep 20
 		runbf2cmd $bf2ip 'virtnet modify -p 0 device -f 0x22300470028'
 	fi
 }
 
 function stop_vdpa {
-	pkill dpdk-vfe-vdpa && sleep 3 && pgrep dpdk-vfe-vdpa && sleep 5
-	pgrep dpdk-vfe-vdpa && { logerr "kill dpdk-vfe-vdpa fail" && return 1; }
+	loginfo "stop_vdpa begin" `pgrep dpdk-vfe-vdpa`
 
+	if pgrep dpdk-vfe-vdpa ; then
+		pkill dpdk-vfe-vdpa && sleep 3 && pgrep dpdk-vfe-vdpa && sleep 5
+		pgrep dpdk-vfe-vdpa && { logerr "kill dpdk-vfe-vdpa fail" && return 1; }
+		runcmd sleep 10
+	fi
+	loginfo "stop_vdpa end" `pgrep dpdk-vfe-vdpa`
 
 	return 0
 }
@@ -41,7 +46,6 @@ function cleanup_env {
 
 	stop_vdpa
 	stop_vm
-
 }
 
 function init_cleanup_env {
@@ -58,9 +62,6 @@ function post_cleanup_env {
 
 function info_env {
 	loginfo "==== info ===="
-	#flq | tee -a $logdir/info
-	#systemctl status libvirtd | tee -a $logdir/info
-	#$qemuapp --version | tee -a $logdir/info
 }
 
 function prep_vf_ovs {
@@ -74,18 +75,21 @@ function prep_sw {
 }
 
 function start_vdpa {
-	loginfo start vdpa
+	loginfo start_vdpa `pgrep dpdk-vfe-vdpa`
 
 	#restart_mlnx_snap
 	restart_controller
 
 	export vdpalog=$logdir/vdpa.log
 	. ./vdpacmd
-	sleep 2 && loginfo "vdpa process `pgrep dpdk-vfe-vdpa`"
-	pgrep dpdk-vfe-vdpa || { logerr "bootup dpdk-vfe-vdpa fail" ; exit 1; }
+	sleep 2 && loginfo "vdpa process: `pgrep dpdk-vfe-vdpa`"
 
+	pgrep dpdk-vfe-vdpa || { logerr "bootup dpdk-vfe-vdpa fail" ; return 1; }
 
+	#runcmd sleep 2
 	runcmd python sw/dpdk/app/vfe-vdpa/vhostmgmt mgmtpf -a ${pfslot}
+	#runcmd sleep 10
+
 	## add vf on bf2
 	[[ ${testtype} == "blk" ]] && runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id 0 --bdev_type spdk --bdev Null0'
 	sleep 4
@@ -97,7 +101,7 @@ function start_vdpa {
 }
 
 function start_vm {
-	loginfo start vm
+	loginfo start_vm
 
 	runcmd virsh create configs/${vmxml}.${testtype}
 	sleep 2
@@ -110,6 +114,11 @@ function start_vm {
 function start_vdpa_vm {
 	start_vdpa
 	start_vm
+}
+
+function stop_vdpa_vm {
+	stop_vdpa
+	stop_vm
 }
 
 function start_peer {
@@ -125,6 +134,7 @@ function stop_peer {
 if [ $sourced -eq 0 ]; then
 	#info_env
 	#prep_vf_ovs
+
 	netfn=`readlink  /sys/bus/pci/devices/${netpf}/virtfn0`
 	blkfn=`readlink  /sys/bus/pci/devices/${blkpf}/virtfn0`
 	export netvf0=`basename $netfn`

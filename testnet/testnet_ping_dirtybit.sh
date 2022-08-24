@@ -10,6 +10,7 @@ source  test_common.sh
 export testits=1
 
 function testcase_pre {
+	start_vdpa_vm
 	ping_pre
 }
 
@@ -30,8 +31,7 @@ function testcase_check {
 
 function testcase_clean {
 	ping_clean
-	post_cleanup_env
-	start_vdpa_vm
+	stop_vdpa_vm
 }
 
 if [ $sourced -eq 0 ]; then

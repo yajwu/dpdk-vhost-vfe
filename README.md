@@ -10,10 +10,8 @@
 
 ## run single test
 
-	sudo ./_create_vf_ovs.sh
-	## !! change testtype pfslot vfslot
-	sudo ./_prep_test.sh
-	sudo ./testblk_dd_00.sh
+	## !! change cases in it
+	sudo ./run_net_single.sh
 
 ## configuration
 
@@ -26,7 +24,6 @@
 
 ## sw
 
-	# in sw
-	ln -sfn dpdk-xx dpdk
-	ln -sfn qemu-xx qemu
+	sw/dpdk
+	sw/qemu
 

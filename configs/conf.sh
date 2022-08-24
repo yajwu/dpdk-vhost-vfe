@@ -25,22 +25,24 @@ export peer=gen-l-vrt-440
 export peerbf2=gen-l-vrt-316-bf
 export hname=`hostname`
 
-export numvfs=16
+export numvfs=1
 
 #export cases="testcase_suspend_resume.sh"
 
 if   [ `hostname` == "gen-l-vrt-440" ]; then
 	export bf2ip=gen-l-vrt-317-bf
-	export p0ip=1.1.3.6
+	export p0ip=1.2.1.6
 
 	export vmname=gen-l-vrt-440-162-CentOS-7.4
 	export vmxml=${vmname}.xml
 	export vmip=gen-l-vrt-440-162
 	export devmac="e4:11:c6:d3:45:f4"
-	export vmethip=1.1.3.20
+	export vmethip=1.2.1.20
 
 	export peer=gen-l-vrt-439
 	export peerbf2=gen-l-vrt-316-bf
+
+	export numvfs=16
 elif [ `hostname` == "gen-l-vrt-292" ]; then
 	export netpf=0000:5e:00.2
 

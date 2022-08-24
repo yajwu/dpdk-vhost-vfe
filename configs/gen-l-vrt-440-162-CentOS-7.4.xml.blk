@@ -95,7 +95,7 @@
 
 <qemu:commandline>
 	<qemu:arg value='-chardev'/>
-	<qemu:arg value='socket,id=char0,path=/tmp/vf-0000:3b:05.1,server'/>
+	<qemu:arg value='socket,id=char0,path=/tmp/vf-0000:3b:06.5,server'/>
 	<qemu:arg value='-device'/>
 	<qemu:arg value='vhost-user-blk-pci,chardev=char0,page-per-vq=on,num-queues=1,disable-legacy=on,disable-modern=off'/>
 </qemu:commandline>

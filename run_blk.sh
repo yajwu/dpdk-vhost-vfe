@@ -29,15 +29,16 @@ function run_main {
 # run case
 	[ -z $cases ] && cases=`ls testblk/*`
 
-	export testresult=$logdir/result
 	for tc in $cases; do
 		export testlog=$logdir/$tc.log
 		. ./$tc
+
 		[ -n "$its_overwrite" ] && testits=$its_overwrite
 		loginfo "$tc begins with total iteration $testits"
 
 		testcase_pre
 		ret="pass"
+
 		for it in `seq $testits`; do
 			loginfo "$tc iteration $it / $testits"
 			testcase_run
@@ -60,6 +61,7 @@ function run_main {
 	done
 
 	post_cleanup_env
+
 	loginfo " ==  result == "
 	cat $testresult
 }
