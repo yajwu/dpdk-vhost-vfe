@@ -46,8 +46,8 @@ for i in $(seq 0 $(($numvfs - 1)) ); do
 	blkbdf=`readlink  /sys/bus/pci/devices/${blkpf}/virtfn${i}`
 	allnetvfs+=(`basename $netbdf`)
 	allblkvfs+=(`basename $blkbdf`)
-	echo "python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a `basename $netbdf` -v /tmp/vfe-net${i}"
-	echo "python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a `basename $blkbdf` -v /tmp/vfe-blk${i}"
+	#echo "python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a `basename $netbdf` -v /tmp/vfe-net${i}"
+	#echo "python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a `basename $blkbdf` -v /tmp/vfe-blk${i}"
 done
 
 loginfo netvfs: ${allnetvfs[@]}
@@ -55,6 +55,8 @@ loginfo blkvfs: ${allblkvfs[@]}
 
 export netvf0=${allnetvfs[0]}
 export blkvf0=${allblkvfs[0]}
+export allnetvfs
+export allblkvfs
 loginfo netvf0: $netvf0 blkvf0: $blkvf0
 
 # 3. setup ovs on arm for net

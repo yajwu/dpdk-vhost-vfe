@@ -9,6 +9,7 @@
 export testits=5
 
 function testcase_pre {
+	start_vdpa_vm
 	ping_pre
 }
 
@@ -24,6 +25,7 @@ function testcase_check {
 
 function testcase_clean {
 	pkill -SIGTERM -f ping
+	stop_vdpa_vm
 }
 
 if [ $sourced -eq 0 ]; then
