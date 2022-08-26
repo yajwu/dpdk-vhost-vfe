@@ -15,6 +15,8 @@ function testcase_run {
 
 	loginfo "shutdown vm "
 	runcmd virsh shutdown $vmname
+	ping_clean
+
 	runcmd sleep 10
 	vm_check_down $hname $vmname || return 1
 
