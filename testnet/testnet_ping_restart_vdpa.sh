@@ -7,7 +7,6 @@ source  test_common.sh
 export testits=5
 
 function testcase_pre {
-	start_vdpa_vm
 	ping_pre
 }
 
@@ -16,6 +15,7 @@ function testcase_run {
 	stop_vdpa || {  return 1; }
 
 	start_vdpa
+	add_pf_vfs
 	sleep 5 && loginfo "vdpa process `pgrep dpdk-vdpa`"
 }
 
@@ -25,7 +25,6 @@ function testcase_check {
 
 function testcase_clean {
 	ping_clean
-	stop_vdpa_vm
 }
 
 if [ $sourced -eq 0 ]; then

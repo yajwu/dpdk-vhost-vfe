@@ -1,5 +1,57 @@
 #!/bin/bash
 
+function del_net_pf() {
+	python sw/dpdk/app/vfe-vdpa/vhostmgmt mgmtpf -r 0000:3b:00.2
+	sleep 6
+}
+
+function add_net_pf() {
+	python sw/dpdk/app/vfe-vdpa/vhostmgmt mgmtpf -a 0000:3b:00.2
+	sleep 6
+}
+
+function add_net_vf() {
+
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:04.5 -v /tmp/vfe-net0
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:04.6 -v /tmp/vfe-net1
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:04.7 -v /tmp/vfe-net2
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:05.0 -v /tmp/vfe-net3
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:05.1 -v /tmp/vfe-net4
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:05.2 -v /tmp/vfe-net5
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:05.3 -v /tmp/vfe-net6
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:05.4 -v /tmp/vfe-net7
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:05.5 -v /tmp/vfe-net8
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:05.6 -v /tmp/vfe-net9
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:05.7 -v /tmp/vfe-net10
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:06.0 -v /tmp/vfe-net11
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:06.1 -v /tmp/vfe-net12
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:06.2 -v /tmp/vfe-net13
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:06.3 -v /tmp/vfe-net14
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:06.4 -v /tmp/vfe-net15
+
+}
+
+function del_net_vf() {
+
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:04.5
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:04.6
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:04.7
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:05.0
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:05.1
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:05.2
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:05.3
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:05.4
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:05.5
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:05.6
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:05.7
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:06.0
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:06.1
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:06.2
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:06.3
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:06.4
+
+}
+
 function add_vfs() {
 
 python sw/dpdk/app/vfe-vdpa/vhostmgmt mgmtpf -a 0000:3b:00.2
@@ -7,15 +59,13 @@ sleep 6
 python sw/dpdk/app/vfe-vdpa/vhostmgmt mgmtpf -a 0000:3b:00.3
 sleep 6
 
-sshpass -p centos ssh root@gen-l-vrt-317-bf  'for i in {0..15}; do snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id $i --bdev_type spdk --bdev Null0; done'
-sshpass -p centos ssh root@gen-l-vrt-317-bf  'for i in {00..15}; do  virtnet modify -p 0 -v $i device -m 00:00:04:40:62:${i}; done'
+#sshpass -p centos ssh root@gen-l-vrt-317-bf  'for i in {0..15}; do snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id $i --bdev_type spdk --bdev Null0; done'
+#sshpass -p centos ssh root@gen-l-vrt-317-bf  'for i in {00..15}; do  virtnet modify -p 0 -v $i device -m 00:00:04:40:62:${i}; done'
 
-#python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:04.5 -v /tmp/vfe-net0
-#python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:06.5 -v /tmp/vfe-blk0
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:04.5 -v /tmp/vfe-net0
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:06.5 -v /tmp/vfe-blk0
 python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:04.6 -v /tmp/vfe-net1
-#python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:06.6 -v /tmp/vfe-blk1
-
-return 0
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:06.6 -v /tmp/vfe-blk1
 python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:04.7 -v /tmp/vfe-net2
 python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:06.7 -v /tmp/vfe-blk2
 python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:05.0 -v /tmp/vfe-net3

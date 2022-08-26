@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 source  test_common.sh
 (return 0 2>/dev/null) && sourced=1 || sourced=0
 [ $sourced -eq 0 ] && source configs/conf.sh && source common.sh && export testlog=$logdir/testlog
@@ -10,7 +9,6 @@ source  test_common.sh
 export testits=1
 
 function testcase_pre {
-	start_vdpa_vm
 	ping_pre
 }
 
@@ -32,6 +30,7 @@ function testcase_check {
 function testcase_clean {
 	ping_clean
 	stop_vdpa_vm
+	start_vdpa_vm
 }
 
 if [ $sourced -eq 0 ]; then

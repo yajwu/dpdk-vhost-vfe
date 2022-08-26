@@ -22,6 +22,8 @@ function run_main {
 	if [ "$1" == "slave" ]; then
 		start_vdpa
 		exit 0
+	else
+		start_vdpa_vm
 	fi
 
 # run case
@@ -56,7 +58,7 @@ function run_main {
 		[[ "$ret" == "fail" && "$stop_on_error" == "yes" ]] && break
 	done
 
-	#post_cleanup_env
+	post_cleanup_env
 	loginfo " ==  result == "
 	cat $testresult
 }
