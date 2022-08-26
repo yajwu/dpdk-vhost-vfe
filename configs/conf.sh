@@ -94,5 +94,22 @@ elif [ `hostname` == "gen-l-vrt-295" ]; then
 
 	export peer=gen-l-vrt-294
 	export peerbf2=gen-l-vrt-294-bf
+elif [ `hostname` == "sw-mtx-032" ]; then
+	export netpf=0000:81:00.2
+	export blkpf=0000:81:00.3
+
+	export bf2ip=sw-mtx-033-bf2.mtx.labs.mlnx
+	export p0ip=1.1.7.6
+	export p0eth=ens1f0
+
+	export vmname=sw-mtx-032-121-RH-8.2
+	export vmxml=${vmname}.xml
+	export vmip=sw-mtx-032-121
+	export devmac="00:00:00:00:33:00"
+	export vmethip=1.1.7.20
+	export vmeth=ens7
+
+	#export peer=gen-l-vrt-294
+	#export peerbf2=gen-l-vrt-294-bf
 fi
 
