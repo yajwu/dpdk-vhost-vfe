@@ -49,13 +49,17 @@ function cleanup_env {
 function init_cleanup_env {
 	loginfo init cleanup_env
 	cleanup_env
+
 	runcmd systemctl restart libvirtd
 	restart_mlnx_snap
+	restart_controller
 }
 
 function post_cleanup_env {
 	loginfo post cleanup_env
 	cleanup_env
+
+	runbf2cmd $bf2ip 'journalctl -u virtio-net-controller  -n 100000 > $logdir/virtio-net-controller.log'
 	#pkill -x tee
 	pkill -x tail
 }
@@ -91,7 +95,7 @@ function start_vdpa {
 	loginfo start_vdpa `pgrep dpdk-vfe-vdpa`
 
 	#restart_mlnx_snap
-	restart_controller
+	#restart_controller
 
 	export vdpalog=$logdir/vdpa.log
 	. ./vdpacmd
