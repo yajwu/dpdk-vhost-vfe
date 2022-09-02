@@ -4,7 +4,7 @@
 
 .  test_common.sh
 
-export testits=5
+export testits=1
 
 
 function testcase_pre {

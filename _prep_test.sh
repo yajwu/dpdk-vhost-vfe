@@ -18,7 +18,7 @@ function restart_controller {
 		# work around to restart snap
 		loginfo "remove !!!!restart virtio-net-controller on bf2 as W.A."
 		runbf2cmd $bf2ip 'systemctl restart virtio-net-controller'
-		runcmd sleep 20
+		runcmd sleep 8
 		runbf2cmd $bf2ip 'virtnet modify -p 0 device -f 0x22300470028'
 	fi
 }
@@ -80,8 +80,17 @@ function prep_sw {
 
 function add_pf_vfs() {
 	#runcmd sleep 2
+
+	loginfo "W.A. set sriov_numvfs to 0 "
+	[[ ${testtype} == "net" ]] && echo 0 > /sys/bus/pci/devices/${netpf}/sriov_numvfs && sleep 2
+	[[ ${testtype} == "blk" ]] && echo 0 > /sys/bus/pci/devices/${blkpf}/sriov_numvfs && sleep 2
+
 	runcmd python sw/dpdk/app/vfe-vdpa/vhostmgmt mgmtpf -a ${pfslot}
 	runcmd sleep 2
+
+	loginfo "W.A. set sriov_numvfs to $numvfs "
+	[[ ${testtype} == "net" ]] && echo $numvfs > /sys/bus/pci/devices/${netpf}/sriov_numvfs && sleep 2
+	[[ ${testtype} == "blk" ]] && echo $numvfs > /sys/bus/pci/devices/${blkpf}/sriov_numvfs && sleep 2
 
 	## add vf on bf2
 	[[ ${testtype} == "blk" ]] && runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id 0 --bdev_type spdk --bdev Null0'
@@ -161,9 +170,19 @@ function ping_dd_multi_check() {
 function mul_add_pfs() {
 	loginfo "mul_add_pfs"
 
+	loginfo "W.A. set sriov_numvfs to 0 "
+	echo 0 > /sys/bus/pci/devices/${netpf}/sriov_numvfs 
+	echo 0 > /sys/bus/pci/devices/${blkpf}/sriov_numvfs 
+	runcmd sleep 8
+
 	python sw/dpdk/app/vfe-vdpa/vhostmgmt mgmtpf -a 0000:3b:00.2
 	python sw/dpdk/app/vfe-vdpa/vhostmgmt mgmtpf -a 0000:3b:00.3
-	runcmd sleep 3
+	runcmd sleep 8
+
+	loginfo "W.A. set sriov_numvfs to $numvfs "
+	echo $numvfs > /sys/bus/pci/devices/${netpf}/sriov_numvfs 
+	echo $numvfs > /sys/bus/pci/devices/${blkpf}/sriov_numvfs 
+	runcmd sleep 8
 
 	sshpass -p centos ssh root@gen-l-vrt-317-bf  'for i in {00..15}; do  virtnet modify -p 0 -v $i device -m 00:00:04:40:62:${i}; done'
 	sshpass -p centos ssh root@gen-l-vrt-317-bf  'for i in {0..15}; do snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id $i --bdev_type spdk --bdev Null0; done'

@@ -10,6 +10,11 @@ function add_net_pf() {
 	sleep 6
 }
 
+function add_blk_pf() {
+	python sw/dpdk/app/vfe-vdpa/vhostmgmt mgmtpf -a 0000:3b:00.3
+	sleep 6
+}
+
 function add_net_vf() {
 
 python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:04.5 -v /tmp/vfe-net0
@@ -50,6 +55,44 @@ python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:06.2
 python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:06.3
 python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:06.4
 
+}
+
+function del_blk_vf() {
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:06.5
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:06.6
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:06.7
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:07.0
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:07.1
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:07.2
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:07.3
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:07.4
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:07.5
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:07.6
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:07.7
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:08.0
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:08.1
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:08.2
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:08.3
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -r 0000:3b:08.4
+}
+
+function add_blk_vf() {
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:06.5 -v /tmp/vfe-blk0
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:06.6 -v /tmp/vfe-blk1
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:06.7 -v /tmp/vfe-blk2
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:07.0 -v /tmp/vfe-blk3
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:07.1 -v /tmp/vfe-blk4
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:07.2 -v /tmp/vfe-blk5
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:07.3 -v /tmp/vfe-blk6
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:07.4 -v /tmp/vfe-blk7
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:07.5 -v /tmp/vfe-blk8
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:07.6 -v /tmp/vfe-blk9
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:07.7 -v /tmp/vfe-blk10
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:08.0 -v /tmp/vfe-blk11
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:08.1 -v /tmp/vfe-blk12
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:08.2 -v /tmp/vfe-blk13
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:08.3 -v /tmp/vfe-blk14
+python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a 0000:3b:08.4 -v /tmp/vfe-blk15
 }
 
 function add_vfs() {
