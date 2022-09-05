@@ -14,7 +14,7 @@ echo -e "\nvirtio-net-controller: "
 sshpass -p centos ssh root@$bf2ip "cd /root/upstream/virtio-net-controller; git rlog -1"
 echo -e "\ndpdk: "
 pushd sw/dpdk 1>/dev/null && git rlog -1 && popd 1>/dev/null
-echo "\nqemu: "
+echo -e "qemu: "
 pushd sw/qemu 1>/dev/null && git rlog -1 && popd 1>/dev/null
 
 
