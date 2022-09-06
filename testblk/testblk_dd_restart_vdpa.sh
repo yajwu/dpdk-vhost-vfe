@@ -17,6 +17,7 @@ function testcase_run {
 	start_vdpa
 	sleep 5 && loginfo "vdpa process `pgrep dpdk-vfe-vdpa`"
 	add_pf_vfs
+	runcmd sleep 8
 }
 
 function testcase_check {

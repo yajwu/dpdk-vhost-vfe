@@ -17,12 +17,12 @@ dmesg -c 1> /dev/null
 
 ./run_net.sh
 cp -rf latest $ldir/run_net_log
-dmseg -c | tee $ldir/run_net_log/dmesg
+dmseg -c > $ldir/run_net_log/dmesg
 
 
 ./run_blk.sh
 cp -rf latest $ldir/run_blk_log
-dmesg -c | tee $ldir/run_blk_log/dmesg
+dmesg -c > $ldir/run_blk_log/dmesg
 
 #./run_mul.sh
 #cp -rf latest $ldir/run_mul_log
