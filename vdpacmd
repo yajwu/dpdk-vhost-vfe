@@ -1,7 +1,7 @@
 #!/bin/bash -x
 
 [ -n "$vdpalog" ] || {
-sudo sw/dpdk/build/app/dpdk-vfe-vdpa -a 0000:00:00.0 --log-level=.,8 --vfio-vf-token=cdc786f0-59d4-41d9-b554-fed36ff5e89f -- --client --iface /tmp/vf- | tee /tmp/vdpa.log;
+sudo sw/dpdk/build/app/dpdk-vfe-vdpa -a 0000:00:00.0 --log-level=.,8 --vfio-vf-token=cdc786f0-59d4-41d9-b554-fed36ff5e89f -- --client --iface /tmp/vf- 2>&1 | tee /tmp/vdpa.log;
 exit 0;
 }
 

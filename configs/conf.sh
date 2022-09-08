@@ -90,7 +90,7 @@ elif [ `hostname` == "gen-l-vrt-295" ]; then
 	export vmip=gen-l-vrt-295-005
 	export devmac="00:00:00:00:33:00"
 	export vmethip=1.1.7.20
-	export vmeth=eth1
+	export vmeth=eth0
 
 	export peer=gen-l-vrt-294
 	export peerbf2=gen-l-vrt-294-bf

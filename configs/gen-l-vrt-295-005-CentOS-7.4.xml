@@ -70,7 +70,7 @@
     <interface type='bridge'>
       <mac address='00:50:56:ed:08:05'/>
       <source bridge='br0'/>
-      <model type='virtio'/>
+      <model type='e1000'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
     </interface>
     <serial type='pty'>
@@ -98,12 +98,17 @@
     </memballoon>
   </devices>
 <qemu:commandline>
-<qemu:arg value='-chardev'/>
-<qemu:arg value='socket,id=char0,path=/tmp/vf-0000:af:04.4,server=on'/>
-<qemu:arg value='-netdev'/>
-<qemu:arg value='type=vhost-user,id=vdpa,chardev=char0,queues=1'/>
-<qemu:arg value='-device'/>
-<qemu:arg value='virtio-net-pci,netdev=vdpa,mac=00:00:00:00:33:00,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,mq=on'/>
+	<qemu:arg value='-chardev'/>
+	<qemu:arg value='socket,id=char0,path=/tmp/vfe-net0,server=on'/>
+	<qemu:arg value='-netdev'/>
+	<qemu:arg value='type=vhost-user,id=vdpa,chardev=char0,queues=1'/>
+	<qemu:arg value='-device'/>
+	<qemu:arg value='virtio-net-pci,netdev=vdpa,mac=00:00:00:00:33:00,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,mq=on'/>
+
+	<qemu:arg value='-chardev'/>
+	<qemu:arg value='socket,id=char1,path=/tmp/vfe-blk0,server=on'/>
+	<qemu:arg value='-device'/>
+	<qemu:arg value='vhost-user-blk-pci,chardev=char1,page-per-vq=on,num-queues=1,disable-legacy=on,disable-modern=off'/>
 </qemu:commandline>
 </domain>
 
