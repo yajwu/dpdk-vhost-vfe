@@ -24,7 +24,7 @@ dmseg -c > $ldir/run_net_log/dmesg
 cp -rf latest $ldir/run_blk_log
 dmesg -c > $ldir/run_blk_log/dmesg
 
-#./run_mul.sh
-#cp -rf latest $ldir/run_mul_log
+./run_mul.sh
+cp -rf latest $ldir/run_mul_log
 
 cat $ldir/run_net_log/result $ldir/run_blk_log/result $ldir/run_mul_log/result > $ldir/result

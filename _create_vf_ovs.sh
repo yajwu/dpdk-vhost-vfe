@@ -63,6 +63,6 @@ loginfo netvf0: $netvf0 blkvf0: $blkvf0
 #runbf2cmd $bf2ip ovs-vsctl add-port ovsbr1 en3f0pf0sf3000
 #runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac
 echo p0ethi $p0eth
-ifconfig $p0eth $p0ip/24
+ip addr add $p0ip/24 dev $p0eth
 
 

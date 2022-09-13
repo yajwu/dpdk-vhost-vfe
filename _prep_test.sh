@@ -85,6 +85,7 @@ function add_pf_vfs() {
 	[[ ${testtype} == "net" ]] && echo 0 > /sys/bus/pci/devices/${netpf}/sriov_numvfs && sleep 2
 	[[ ${testtype} == "blk" ]] && echo 0 > /sys/bus/pci/devices/${blkpf}/sriov_numvfs && sleep 2
 
+	#read
 	runcmd python sw/dpdk/app/vfe-vdpa/vhostmgmt mgmtpf -a ${pfslot}
 	runcmd sleep 8
 
@@ -277,8 +278,8 @@ function mul_create_vms() {
 	virsh create configs/4_4/gen-l-vrt-440-164-CentOS-7.4.xml
 	virsh create configs/4_4/gen-l-vrt-440-165-CentOS-7.4.xml
 
-	for i in {1..10};do
-		runsshcmd gen-l-vrt-440-162 date && sleep 8
+	for i in {1..10}; do
+		sshpass -p 3tango ssh root@gen-l-vrt-440-162 date && break || sleep 8
 	done
 
 }
@@ -330,6 +331,16 @@ function mul_config_ip() {
 	ip addr add 1.1.16.1/24 dev enp59s0f0
 
 }
+
+function start_vdpa_multi_dev() {
+	stop_vdpa
+	start_vdpa
+
+	mul_add_pfs
+	mul_add_vfs
+}
+
+
 
 function start_vdpa_multi_dev_vm() {
 	stop_vdpa

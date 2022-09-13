@@ -16,10 +16,12 @@ function testcase_pre {
 
 function testcase_run {
 	shutdown_mul_vm
+	runcmd sleep 10
 
 	mul_create_vms
-	mulconfig_ip
+	mul_config_ip
 
+	return 0
 }
 
 function testcase_check {
