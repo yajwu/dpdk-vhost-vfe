@@ -96,25 +96,25 @@
     <qemu:arg value='-chardev'/>
     <qemu:arg value='socket,id=charnet1,path=/tmp/vfe-net12,server'/>
     <qemu:arg value='-netdev'/>
-    <qemu:arg value='vhost-user,chardev=charnet1,queues=1,id=hostnet1'/>
+    <qemu:arg value='vhost-user,chardev=charnet1,queues=4,id=hostnet1'/>
     <qemu:arg value='-device'/>
     <qemu:arg value='virtio-net-pci,mq=on,vectors=6,netdev=hostnet1,id=net1,mac=00:00:04:40:62:12,bus=pci.0,addr=0x7,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
     <qemu:arg value='-chardev'/>
     <qemu:arg value='socket,id=charnet2,path=/tmp/vfe-net13,server'/>
     <qemu:arg value='-netdev'/>
-    <qemu:arg value='vhost-user,chardev=charnet2,queues=1,id=hostnet2'/>
+    <qemu:arg value='vhost-user,chardev=charnet2,queues=4,id=hostnet2'/>
     <qemu:arg value='-device'/>
     <qemu:arg value='virtio-net-pci,mq=on,vectors=6,netdev=hostnet2,id=net2,mac=00:00:04:40:62:13,bus=pci.0,addr=0x8,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
     <qemu:arg value='-chardev'/>
     <qemu:arg value='socket,id=charnet3,path=/tmp/vfe-net14,server'/>
     <qemu:arg value='-netdev'/>
-    <qemu:arg value='vhost-user,chardev=charnet3,queues=1,id=hostnet3'/>
+    <qemu:arg value='vhost-user,chardev=charnet3,queues=4,id=hostnet3'/>
     <qemu:arg value='-device'/>
     <qemu:arg value='virtio-net-pci,mq=on,vectors=6,netdev=hostnet3,id=net3,mac=00:00:04:40:62:14,bus=pci.0,addr=0x9,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
     <qemu:arg value='-chardev'/>
     <qemu:arg value='socket,id=charnet4,path=/tmp/vfe-net15,server'/>
     <qemu:arg value='-netdev'/>
-    <qemu:arg value='vhost-user,chardev=charnet4,queues=1,id=hostnet4'/>
+    <qemu:arg value='vhost-user,chardev=charnet4,queues=4,id=hostnet4'/>
     <qemu:arg value='-device'/>
     <qemu:arg value='virtio-net-pci,mq=on,vectors=6,netdev=hostnet4,id=net4,mac=00:00:04:40:62:15,bus=pci.0,addr=0xa,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
 
