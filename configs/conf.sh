@@ -26,6 +26,7 @@ export peerbf2=gen-l-vrt-316-bf
 export hname=`hostname`
 
 export numvfs=1
+export vmqps=4
 
 #export cases="testcase_suspend_resume.sh"
 
@@ -43,6 +44,8 @@ if   [ `hostname` == "gen-l-vrt-440" ]; then
 	export peerbf2=gen-l-vrt-316-bf
 
 	export numvfs=16
+elif [ `hostname` == "gen-l-vrt-439" ]; then
+	export vmqps=31
 elif [ `hostname` == "gen-l-vrt-292" ]; then
 	export netpf=0000:5e:00.2
 

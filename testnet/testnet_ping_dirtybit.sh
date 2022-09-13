@@ -22,9 +22,8 @@ function testcase_run {
 }
 
 function testcase_check {
-	local vlog=`tail -n 30 $vdpalog`
-	grep "last desc pass" <<< "$vlog" || { echo $vlog; return 1; }
-	grep "used ring pass" <<< "$vlog" || { echo $vlog; return 1; }
+	grep "last desc pass" $vdpalog || { echo $vlog; return 1; }
+	grep "used ring pass" $vdpalog || { echo $vlog; return 1; }
 }
 
 function testcase_clean {
