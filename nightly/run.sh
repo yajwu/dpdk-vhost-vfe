@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "/tmp/cores/core.%e.%p.%h.%t" > /proc/sys/kernel/core_pattern
+
 now=`date +"%Y_%m_%d_%H_%M"`
 basedir=/images/nightly
 
@@ -26,5 +28,6 @@ dmesg -c > $ldir/run_blk_log/dmesg
 
 ./run_mul.sh
 cp -rf latest $ldir/run_mul_log
+dmseg -c > $ldir/run_mul_log/dmesg
 
 cat $ldir/run_net_log/result $ldir/run_blk_log/result $ldir/run_mul_log/result > $ldir/result
