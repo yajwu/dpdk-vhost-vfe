@@ -26,8 +26,12 @@ function restart_controller {
 function stop_vdpa {
 	loginfo "stop_vdpa begin" `pgrep dpdk-vfe-vdpa`
 
+	local retry=0
 	while pgrep dpdk-vfe-vdpa ; do
 		pkill -SIGTERM dpdk-vfe-vdpa && runcmd sleep 2 
+
+		retry=$(($retry + 1))
+		[[ $retry  -gt 10 ]] && { loginfo "force kill" ; pkill -9 dpdk-vfe-vdpa; runcmd sleep 10; }
 	done
 	loginfo "stop_vdpa end" `pgrep dpdk-vfe-vdpa`
 
