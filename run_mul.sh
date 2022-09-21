@@ -60,4 +60,8 @@ function run_main {
 	cat $testresult
 }
 
+if [[ $numvfs -le 1 ]]; then
+	logerr "numvfs is $numvfs, can't run multi device test"
+	exit 1
+fi
 run_main $1

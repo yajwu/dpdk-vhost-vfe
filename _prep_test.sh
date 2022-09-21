@@ -54,6 +54,10 @@ function init_cleanup_env {
 	loginfo init cleanup_env
 	cleanup_env
 
+	for vm in `virsh list --name`;do
+		virsh destroy $vm
+	done
+
 	runcmd systemctl restart libvirtd
 	restart_mlnx_snap
 	restart_controller
