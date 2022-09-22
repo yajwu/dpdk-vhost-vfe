@@ -64,5 +64,6 @@ loginfo netvf0: $netvf0 blkvf0: $blkvf0
 #runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac
 echo p0ethi $p0eth
 ip addr add $p0ip/24 dev $p0eth
+ip link set $p0eth up
 
 
