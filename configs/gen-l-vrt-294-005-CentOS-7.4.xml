@@ -95,7 +95,7 @@
   </devices>
 <qemu:commandline>
 <qemu:arg value='-chardev'/>
-<qemu:arg value='socket,id=char0,path=/tmp/vf-0000:af:04.4,server=on'/>
+<qemu:arg value='socket,id=char0,path=/tmp/sock-virtio0,server=on'/>
 <qemu:arg value='-netdev'/>
 <qemu:arg value='type=vhost-user,id=vdpa,chardev=char0,queues=1'/>
 <qemu:arg value='-device'/>

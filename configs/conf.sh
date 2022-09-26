@@ -69,7 +69,7 @@ elif [ `hostname` == "gen-l-vrt-294" ]; then
 
 	export bf2ip=gen-l-vrt-294-bf
 	export p0ip=1.1.5.6
-	export p0eth=ens4f0np0
+	export p0eth=enp175s0f0
 
 	#export vmname=gen-l-vrt-292-005-RH-8.2
 	#export vmxml=${vmname}.xml
