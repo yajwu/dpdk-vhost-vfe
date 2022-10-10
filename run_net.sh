@@ -21,6 +21,7 @@ function run_main {
 
 	if [ "$1" == "slave" ]; then
 		start_vdpa
+		add_pf_vfs slave
 		exit 0
 	else
 		start_vdpa_vm
