@@ -102,12 +102,20 @@ function add_pf_vfs() {
 	#[[ ${testtype} == "blk" ]] && echo $numvfs > /sys/bus/pci/devices/${blkpf}/sriov_numvfs && sleep 2
 
 	## add vf on bf2
-	[[ ${testtype} == "blk" ]] && runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id 0 --bdev_type spdk --bdev Null0'
-	sleep 4
-	[[ ${testtype} == "net" ]] && runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac
-	[[ ${1} == "slave" ]]      && runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac_lm
-	sleep 1
-	runcmd python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a ${vfslot}
+	if [[ ${testtype} == "blk" ]]; then
+		runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id 0 --bdev_type spdk --bdev Null0'
+		sleep 4
+		runcmd python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a ${vfslot} -v /tmp/vfe-blk0
+	fi
+
+	if [[ ${testtype} == "net" ]]; then
+		if [[ ${1} == "slave" ]]; then
+			runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac_lm
+		else
+			runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac
+		fi
+		runcmd python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a ${vfslot} -v /tmp/vfe-net0
+	fi
 }
 
 function start_vdpa {

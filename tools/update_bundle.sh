@@ -5,7 +5,7 @@
 function update_build_dpdk {
 	pushd sw/dpdk
 
-	git checkout mlx_vfe_vdpa
+	git checkout main
 	git pull
 	git clean -xdf .
 	cp ../../configs/build_dpdk.sh .

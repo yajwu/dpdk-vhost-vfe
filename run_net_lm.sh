@@ -7,9 +7,8 @@
 #export cases="testnet/testnet_ping_suspend_resume.sh"
 #export cases="testnet/testnet_ping_dirtybit.sh"
 #export cases="testnet/testnet_ping_shutdown_start.sh"
+export cases="testcas_ping_lm.sh"
 #export cases="testnet/testnet_ping_qpnum_chng.sh"
-#export cases="testcas_ping_lm.sh"
-export cases="testnet/testnet_ping_qpnum_chng.sh"
 
 ./run_net.sh
 
