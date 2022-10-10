@@ -3,6 +3,8 @@
 #scl enable devtoolset-8 bash
 [ -d bin ] || mkdir bin
 pushd bin
+source scl_source enable devtoolset-8
+
 
 source scl_source enable devtoolset-8
 
