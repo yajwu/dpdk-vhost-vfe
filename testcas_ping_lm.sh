@@ -13,6 +13,7 @@ function testcase_pre {
 	runsshcmd $peer virsh destroy $vmname
 	start_peer net
 	ping_pre
+	runsshcmd_bg $vmip ping $p0ip -i 0.5
 
 	runcmd virsh list --all
 	runsshcmd $peer virsh list --all
