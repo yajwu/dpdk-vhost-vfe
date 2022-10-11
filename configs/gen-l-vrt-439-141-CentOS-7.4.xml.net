@@ -115,7 +115,7 @@
   </devices>
   <qemu:commandline>
     <qemu:arg value='-chardev'/>
-    <qemu:arg value='socket,id=charnet1,path=/tmp/vf-0000:3b:04.5,server'/>
+    <qemu:arg value='socket,id=charnet1,path=/tmp/vfe-net0,server'/>
     <qemu:arg value='-netdev'/>
     <qemu:arg value='vhost-user,chardev=charnet1,queues=31,id=hostnet1'/>
     <qemu:arg value='-device'/>
