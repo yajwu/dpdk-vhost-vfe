@@ -7,6 +7,7 @@ function update_build_dpdk {
 
 	git checkout main
 	git pull
+	git reset --hard origin/main
 	git clean -xdf .
 	cp ../../configs/build_dpdk.sh .
 
