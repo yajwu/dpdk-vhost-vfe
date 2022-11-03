@@ -1,0 +1,122 @@
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+  <name>gen-l-vrt-295-008-RH-8.2</name>
+  <uuid>313cf158-957b-4fee-befb-054847808f4e</uuid>
+  <memory unit='KiB'>8388608</memory>
+  <currentMemory unit='KiB'>8388608</currentMemory>
+  <vcpu placement='static'>16</vcpu>
+	<cputune>
+	<vcpupin vcpu='0' cpuset='1'/>
+	<vcpupin vcpu='1' cpuset='3'/>
+	<vcpupin vcpu='2' cpuset='5'/>
+	<vcpupin vcpu='3' cpuset='7'/>
+	<vcpupin vcpu='4' cpuset='7'/>
+	<vcpupin vcpu='5' cpuset='7'/>
+	<vcpupin vcpu='6' cpuset='7'/>
+	<vcpupin vcpu='7' cpuset='9'/>
+	<vcpupin vcpu='8' cpuset='11'/>
+	<vcpupin vcpu='9' cpuset='13'/>
+	<vcpupin vcpu='10' cpuset='15'/>
+	<vcpupin vcpu='11' cpuset='17'/>
+	<vcpupin vcpu='12' cpuset='19'/>
+	<vcpupin vcpu='13' cpuset='21'/>
+	<vcpupin vcpu='14' cpuset='23'/>
+	<vcpupin vcpu='15' cpuset='25'/>
+	</cputune>
+  <memoryBacking>
+    <hugepages>
+      <page size='1048576' unit='KiB'/>
+    </hugepages>
+  </memoryBacking>
+  <os>
+    <type arch='x86_64' machine='pc-i440fx-4.0'>hvm</type>
+    <boot dev='hd'/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+  </features>
+  <cpu mode='host-model' check='partial'>
+    <numa>
+      <cell id='0' cpus='0-15' memory='8388608' unit='KiB' memAccess='shared'/>
+    </numa>
+  </cpu>
+  <clock offset='utc'>
+    <timer name='rtc' tickpolicy='catchup'/>
+    <timer name='pit' tickpolicy='delay'/>
+    <timer name='hpet' present='no'/>
+  </clock>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <pm>
+    <suspend-to-mem enabled='no'/>
+    <suspend-to-disk enabled='no'/>
+  </pm>
+  <devices>
+    <emulator>/images/testvfe/sw/qemu/bin/x86_64-softmmu/qemu-system-x86_64</emulator>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='/images/gen-l-vrt-295-008/gen-l-vrt-295-008.img'/>
+      <target dev='sda' bus='sata'/>
+      <address type='drive' controller='0' bus='0' target='0' unit='0'/>
+    </disk>
+    <controller type='usb' index='0' model='ich9-ehci1'>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x7'/>
+    </controller>
+    <controller type='usb' index='0' model='ich9-uhci1'>
+      <master startport='0'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0' multifunction='on'/>
+    </controller>
+    <controller type='usb' index='0' model='ich9-uhci2'>
+      <master startport='2'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x1'/>
+    </controller>
+    <controller type='usb' index='0' model='ich9-uhci3'>
+      <master startport='4'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x2'/>
+    </controller>
+    <controller type='pci' index='0' model='pci-root'/>
+    <controller type='sata' index='0'>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/>
+    </controller>
+    <interface type='bridge'>
+      <mac address='00:50:56:ed:08:08'/>
+      <source bridge='br0'/>
+      <model type='e1000'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
+    </interface>
+    <serial type='pty'>
+      <target type='isa-serial' port='0'>
+        <model name='isa-serial'/>
+      </target>
+    </serial>
+    <console type='pty'>
+      <target type='serial' port='0'/>
+    </console>
+    <input type='tablet' bus='usb'>
+      <address type='usb' bus='0' port='1'/>
+    </input>
+    <input type='mouse' bus='ps2'/>
+    <input type='keyboard' bus='ps2'/>
+    <graphics type='vnc' port='-1' autoport='yes'>
+      <listen type='address'/>
+    </graphics>
+    <video>
+      <model type='cirrus' vram='16384' heads='1' primary='yes'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/>
+    </video>
+    <memballoon model='none'>
+    </memballoon>
+  </devices>
+<qemu:commandline>
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet1,path=/tmp/vfe-net0,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet1,queues=16,id=hostnet1'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,vectors=34,netdev=hostnet1,id=net1,mac=00:00:00:00:33:00,bus=pci.0,addr=0x8,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+<qemu:arg value='--trace'/>
+<qemu:arg value='runstate_set'/>
+</qemu:commandline>
+</domain>
+
