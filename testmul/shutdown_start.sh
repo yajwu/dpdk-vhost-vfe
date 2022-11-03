@@ -26,6 +26,13 @@ function testcase_run {
 
 function testcase_check {
 	ping_dd_multi_check
+	if [[ $? -ne 0 ]]; then
+
+	loginfo sshpass -p 3tango ssh root@gen-l-vrt-440-162 ifconfig 
+	loginfo sshpass -p 3tango ssh root@gen-l-vrt-440-163 ifconfig
+	loginfo sshpass -p 3tango ssh root@gen-l-vrt-440-164 ifconfig
+	loginfo sshpass -p 3tango ssh root@gen-l-vrt-440-165 ifconfig
+	fi
 }
 
 function testcase_clean {

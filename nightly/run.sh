@@ -28,6 +28,14 @@ dmesg -c > $ldir/run_blk_log/dmesg
 
 ./run_mul.sh
 cp -rf latest $ldir/run_mul_log
-dmseg -c > $ldir/run_mul_log/dmesg
+dmesg -c > $ldir/run_mul_log/dmesg
 
-cat $ldir/run_net_log/result $ldir/run_blk_log/result $ldir/run_mul_log/result > $ldir/result
+./run_net_lm.sh
+cp -rf latest $ldir/run_net_lm
+dmesg -c > $ldir/run_net_lm/dmesg
+
+./run_blk_lm.sh
+cp -rf latest $ldir/run_blk_lm
+dmesg -c > $ldir/run_blk_lm/dmesg
+
+cat $ldir/run_net_log/result $ldir/run_blk_log/result $ldir/run_mul_log/result $ldir/run_blk_lm/result $ldir/run_net_lm/result> $ldir/result

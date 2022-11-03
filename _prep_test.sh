@@ -296,7 +296,7 @@ function mul_create_vms() {
 	virsh create configs/4_4/gen-l-vrt-440-165-CentOS-7.4.xml
 
 	for i in {1..10}; do
-		sshpass -p 3tango ssh root@gen-l-vrt-440-162 date && break || sleep 8
+		sshpass -p 3tango ssh root@gen-l-vrt-440-165 date && break || sleep 8
 	done
 
 }
