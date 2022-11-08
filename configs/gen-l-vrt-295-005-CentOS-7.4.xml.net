@@ -100,7 +100,7 @@
     <qemu:arg value='-chardev'/>
     <qemu:arg value='socket,id=charnet1,path=/tmp/vfe-net0,server'/>
     <qemu:arg value='-netdev'/>
-    <qemu:arg value='vhost-user,chardev=charnet1,queues=1,id=hostnet1'/>
+    <qemu:arg value='vhost-user,chardev=charnet1,queues=4,id=hostnet1'/>
     <qemu:arg value='-device'/>
     <qemu:arg value='virtio-net-pci,mq=on,vectors=6,netdev=hostnet1,id=net1,mac=00:00:00:00:33:00,bus=pci.0,addr=0x8,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
 <qemu:arg value='--trace'/>
