@@ -117,5 +117,21 @@ elif [ `hostname` == "sw-mtx-032" ]; then
 
 	#export peer=gen-l-vrt-294
 	#export peerbf2=gen-l-vrt-294-bf
-fi
+elif [ `hostname` == "sw-mtx-054" ]; then
+	export netpf=0000:b1:00.2
 
+	export bf2ip=sw-mtx-054-bf2.mtx.labs.mlnx
+	export p0ip=1.1.7.6
+	export p0eth=enp177s0f0
+
+	export vmname=sw-mtx-054-001-CentOS-7.9
+	export vmxml=${vmname}.xml
+	export vmip=sw-mtx-054-001
+	export devmac="00:00:00:00:33:00"
+	export vmethip=1.1.7.20
+	export vmeth=eth1
+
+	#export peer=gen-l-vrt-294
+	#export peerbf2=gen-l-vrt-294-bf
+
+fi

@@ -11,9 +11,10 @@
 
 
 # 1. bind pf device to vfio
-modprobe vfio vfio-pci
+modprobe  vfio-pci vfio
 echo 0x1af4 0x1041 > /sys/bus/pci/drivers/vfio-pci/new_id 2>/dev/null
 echo 0x1af4 0x1042 > /sys/bus/pci/drivers/vfio-pci/new_id 2>/dev/null
+echo 0x1af4 0x1000 > /sys/bus/pci/drivers/vfio-pci/new_id 2>/dev/null
 
 echo 1 > /sys/module/vfio_pci/parameters/enable_sriov
 
