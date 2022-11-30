@@ -81,6 +81,8 @@ elif [ `hostname` == "gen-l-vrt-294" ]; then
 
 	export peer=gen-l-vrt-295
 	unset peerbf2
+
+	export numvfs=4
 elif [ `hostname` == "gen-l-vrt-295" ]; then
 	export netpf=0000:af:00.2
 	export blkpf=0000:af:00.3
@@ -99,7 +101,7 @@ elif [ `hostname` == "gen-l-vrt-295" ]; then
 	export peer=gen-l-vrt-294
 	export peerbf2=gen-l-vrt-294-bf
 
-	export numvfs=2
+	export numvfs=4
 elif [ `hostname` == "sw-mtx-032" ]; then
 	export netpf=0000:81:00.2
 	export blkpf=0000:81:00.3

@@ -10,7 +10,7 @@ function clone_dpdk_mlx {
 
 function clone_qemu {
 	pushd sw
-	git clone git@github.com:Mellanox/qemu.git -b mlx_4.2.0 qemu.mlx
+	git clone git@github.com:Mellanox/qemu.git -b mlx_vfe_vdpa qemu.mlx
 	pushd qemu.mlx
 	git submodule update --init --recursive
 	popd
@@ -36,10 +36,10 @@ function clone_dpdk_vfe {
 [ -d sw ] || mkdir sw
 
 [ -d sw/dpdk-vhost-vfe ] || clone_dpdk_vfe
-[ -d sw/qemu.gerrit ] || clone_qemu_gerrit
+[ -d sw/qemu.mlx ] || clone_qemu
 
-[ -L sw/dpdk ] || ln -sf dpdk-vhost-vfe sw/dpdk
-[ -L sw/qemu ] || ln -sf qemu.gerrit sw/qemu
+[ -L sw/dpdk ] || ln -sfn dpdk-vhost-vfe sw/dpdk
+[ -L sw/qemu ] || ln -sfn qemu.mlx sw/qemu
 
 if [ ! -f $dpdkapp ]; then
 	cp ./configs/build_dpdk.sh sw/dpdk/
