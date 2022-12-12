@@ -211,5 +211,5 @@ done
 }
 
 
-#add_vfs
+add_vfs
 #create_vms

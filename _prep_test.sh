@@ -9,7 +9,7 @@ function restart_mlnx_snap {
 		loginfo "restart mlnx_snap on bf2"
 		runbf2cmd $bf2ip 'systemctl restart mlnx_snap'
 		runbf2cmd $bf2ip 'spdk_rpc.py bdev_null_create Null0 1024 512'
-		runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create --pf_id 0 --bdev_type spdk mlx5_0 --bdev Null0 --num_queues 1  --admin_q'
+		runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create --pf_id 0 --bdev_type spdk mlx5_0 --bdev Null0 --num_queues 1  --admin_q --force_in_order'
 	fi
 }
 
@@ -103,7 +103,7 @@ function add_pf_vfs() {
 
 	## add vf on bf2
 	if [[ ${testtype} == "blk" ]]; then
-		runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id 0 --bdev_type spdk --bdev Null0'
+		runbf2cmd $bf2ip 'snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id 0 --bdev_type spdk --bdev Null0 --force_in_order'
 		sleep 4
 		runcmd python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a ${vfslot} -v /tmp/vfe-blk0
 	fi
@@ -203,7 +203,7 @@ function mul_add_pfs() {
 	#runcmd sleep 8
 
 	sshpass -p centos ssh root@gen-l-vrt-317-bf  'for i in {00..15}; do  virtnet modify -p 0 -v $i device -m 00:00:04:40:62:${i}; done'
-	sshpass -p centos ssh root@gen-l-vrt-317-bf  'for i in {0..15}; do snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id $i --bdev_type spdk --bdev Null0; done'
+	sshpass -p centos ssh root@gen-l-vrt-317-bf  'for i in {0..15}; do snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id $i --bdev_type spdk --bdev Null0 --force_in_order; done'
 
 }
 
@@ -290,10 +290,14 @@ function mul_del_vfs() {
 function mul_create_vms() {
 	loginfo "create_vms"
 
-	virsh create configs/4_4/gen-l-vrt-440-162-CentOS-7.4.xml
 	virsh create configs/4_4/gen-l-vrt-440-163-CentOS-7.4.xml
+	sleep 2
+	virsh create configs/4_4/gen-l-vrt-440-162-CentOS-7.4.xml
+	sleep 2
 	virsh create configs/4_4/gen-l-vrt-440-164-CentOS-7.4.xml
+	sleep 2
 	virsh create configs/4_4/gen-l-vrt-440-165-CentOS-7.4.xml
+	sleep 2
 
 	for i in {1..10}; do
 		sshpass -p 3tango ssh root@gen-l-vrt-440-165 date && break || sleep 8
