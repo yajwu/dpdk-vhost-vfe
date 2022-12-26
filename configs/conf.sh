@@ -10,7 +10,7 @@ export testtype=net
 ## default value is on gen-l-vrt-439
 export netpf=0000:3b:00.2
 export blkpf=0000:3b:00.3
-export bf2ip=gen-l-vrt-316-bf
+export bf2ip=gen-l-vrt-439-bf
 export p0ip=1.2.2.5
 export p0eth=enp59s0f0
 
@@ -23,7 +23,7 @@ export devmac="e4:11:c6:d3:45:f3"
 export devmac_lm="e4:11:c6:d3:45:f4"
 
 export peer=gen-l-vrt-440
-export peerbf2=gen-l-vrt-316-bf
+export peerbf2=gen-l-vrt-440-bf
 export hname=`hostname`
 
 export numvfs=1
