@@ -32,7 +32,7 @@ export vmqps=4
 #export cases="testcase_suspend_resume.sh"
 
 if   [ `hostname` == "gen-l-vrt-440" ]; then
-	export bf2ip=gen-l-vrt-317-bf
+	export bf2ip=gen-l-vrt-440-bf
 	export p0ip=1.2.1.6
 
 	export vmname=gen-l-vrt-440-162-CentOS-7.4
@@ -42,7 +42,7 @@ if   [ `hostname` == "gen-l-vrt-440" ]; then
 	export vmethip=1.2.1.20
 
 	export peer=gen-l-vrt-439
-	export peerbf2=gen-l-vrt-316-bf
+	export peerbf2=gen-l-vrt-439-bf
 
 	export numvfs=16
 elif [ `hostname` == "gen-l-vrt-439" ]; then
