@@ -8,7 +8,7 @@
       <page size='1048576' unit='KiB'/>
     </hugepages>
   </memoryBacking>
-  <vcpu placement='static'>32</vcpu>
+  <vcpu placement='static'>4</vcpu>
   <resource>
     <partition>/machine</partition>
   </resource>
@@ -23,7 +23,7 @@
   <cpu mode='custom' match='exact' check='partial'>
     <model fallback='allow'>Cascadelake-Server-noTSX</model>
     <numa>
-      <cell id='0' cpus='0-31' memory='4194304' unit='KiB' memAccess='shared'/>
+      <cell id='0' cpus='0-3' memory='4194304' unit='KiB' memAccess='shared'/>
     </numa>
   </cpu>
   <clock offset='utc'>
@@ -97,7 +97,7 @@
 	<qemu:arg value='-chardev'/>
 	<qemu:arg value='socket,id=char0,path=/tmp/vfe-blk0,server'/>
 	<qemu:arg value='-device'/>
-	<qemu:arg value='vhost-user-blk-pci,chardev=char0,page-per-vq=on,num-queues=1,disable-legacy=on,disable-modern=off'/>
+	<qemu:arg value='vhost-user-blk-pci,chardev=char0,page-per-vq=on,num-queues=4,disable-legacy=on,disable-modern=off'/>
 </qemu:commandline>
 
 </domain>
