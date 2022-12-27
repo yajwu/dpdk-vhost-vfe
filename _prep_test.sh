@@ -202,8 +202,8 @@ function mul_add_pfs() {
 	#echo $numvfs > /sys/bus/pci/devices/${blkpf}/sriov_numvfs 
 	#runcmd sleep 8
 
-	sshpass -p centos ssh root@gen-l-vrt-317-bf  'for i in {00..15}; do  virtnet modify -p 0 -v $i device -m 00:00:04:40:62:${i}; done'
-	sshpass -p centos ssh root@gen-l-vrt-317-bf  'for i in {0..15}; do snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id $i --bdev_type spdk --bdev Null0 --force_in_order; done'
+	sshpass -p centos ssh root@gen-l-vrt-440-bf  'for i in {00..15}; do  virtnet modify -p 0 -v $i device -m 00:00:04:40:62:${i}; done'
+	sshpass -p centos ssh root@gen-l-vrt-440-bf  'for i in {0..15}; do snap_rpc.py controller_virtio_blk_create mlx5_0 --pf_id 0 --vf_id $i --bdev_type spdk --bdev Null0 --force_in_order; done'
 
 }
 
