@@ -5,6 +5,7 @@ function repo_update() {
 	echo "#### update snap-rdma ###"
 	pushd snap-rdma
 	git checkout main
+	git reset --hard origin/main
 	git pull
 	git clean -xdf .
 	git status 
@@ -13,6 +14,7 @@ function repo_update() {
 	echo "#### update nvmx ###"
 	pushd nvmx
 	git checkout main
+	git reset --hard origin/main
 	git pull
 	git clean -xdf .
 	git status 
@@ -20,7 +22,8 @@ function repo_update() {
 
 	echo "#### update virtio-net-controller ###"
 	pushd virtio-net-controller
-	git checkout v1.4
+	git checkout v1.5
+	git reset --hard origin/v1.5
 	git pull
 	git clean -xdf .
 	git status 
