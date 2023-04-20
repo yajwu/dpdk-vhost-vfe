@@ -19,7 +19,7 @@ function restart_controller {
 		loginfo "remove !!!!restart virtio-net-controller on bf2 as W.A."
 		runbf2cmd $bf2ip 'systemctl restart virtio-net-controller'
 		runcmd sleep 8
-		runbf2cmd $bf2ip 'virtnet modify -p 0 device -f 0x22300470028'
+		runbf2cmd $bf2ip 'virtnet modify -p 0 device -f 0x32300470028'
 	fi
 }
 
@@ -112,7 +112,7 @@ function add_pf_vfs() {
 		if [[ ${1} == "slave" ]]; then
 			runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac_lm
 		else
-			runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac -f 0x22300470028
+			runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac -f 0x32300470028
 		fi
 		runcmd python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a ${vfslot} -v /tmp/vfe-net0
 	fi
