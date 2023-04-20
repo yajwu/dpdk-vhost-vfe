@@ -112,7 +112,7 @@ function add_pf_vfs() {
 		if [[ ${1} == "slave" ]]; then
 			runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac_lm
 		else
-			runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac
+			runbf2cmd $bf2ip virtnet modify -p 0 -v 0 device -m $devmac -f 0x22300470028
 		fi
 		runcmd python sw/dpdk/app/vfe-vdpa/vhostmgmt vf -a ${vfslot} -v /tmp/vfe-net0
 	fi
