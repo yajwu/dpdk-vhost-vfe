@@ -12,7 +12,7 @@ export netpf=0000:3b:00.2
 export blkpf=0000:3b:00.3
 export bf2ip=gen-l-vrt-439-bf
 export p0ip=1.2.2.5
-export p0eth=enp59s0f0
+export p0eth=enp59s0f0np0
 
 export vmname=gen-l-vrt-439-141-CentOS-7.4
 export vmxml=${vmname}.xml
