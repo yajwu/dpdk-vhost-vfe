@@ -33,6 +33,7 @@ export vmqps=4
 
 if   [ `hostname` == "gen-l-vrt-440" ]; then
 	export bf2ip=gen-l-vrt-440-bf
+    export p0eth=enp59s0f0
 	export p0ip=1.2.1.6
 
 	export vmname=gen-l-vrt-440-162-CentOS-7.4
