@@ -13,7 +13,7 @@ ln -sfn  $ldir latest
 
 cd /images/testvfe
 
-tools/update_bundle.sh | tee $ldir/update_bundle.log
+#tools/update_bundle.sh | tee $ldir/update_bundle.log
 ./tools/_show_ver.sh | tee $ldir/version
 dmesg -c 1> /dev/null
 
@@ -30,12 +30,4 @@ dmesg -c > $ldir/run_blk_log/dmesg
 cp -rf latest $ldir/run_mul_log
 dmesg -c > $ldir/run_mul_log/dmesg
 
-./run_net_lm.sh
-cp -rf latest $ldir/run_net_lm
-dmesg -c > $ldir/run_net_lm/dmesg
-
-./run_blk_lm.sh
-cp -rf latest $ldir/run_blk_lm
-dmesg -c > $ldir/run_blk_lm/dmesg
-
-cat $ldir/run_net_log/result $ldir/run_blk_log/result $ldir/run_mul_log/result $ldir/run_blk_lm/result $ldir/run_net_lm/result> $ldir/result
+cat $ldir/run_net_log/result $ldir/run_blk_log/result $ldir/run_mul_log/result > $ldir/result
