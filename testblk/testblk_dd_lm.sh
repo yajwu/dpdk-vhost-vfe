@@ -9,6 +9,8 @@ source  test_common.sh
 
 export testits=5
 
+[ -z "$peer" ] && skip_case=1
+
 function testcase_pre {
 	runsshcmd $peer virsh shutdown $vmname
 	start_peer blk

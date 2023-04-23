@@ -9,6 +9,10 @@ source  test_common.sh
 
 export testits=5
 
+
+[ -z "$peer" ] && skip_case=1
+
+
 function testcase_pre {
 	runsshcmd $peer virsh destroy $vmname
 	start_peer net

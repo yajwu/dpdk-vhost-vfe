@@ -22,8 +22,8 @@ export vmethip=1.2.2.20
 export devmac="e4:11:c6:d3:45:f3"
 export devmac_lm="e4:11:c6:d3:45:f4"
 
-export peer=gen-l-vrt-440
-export peerbf2=gen-l-vrt-440-bf
+#export peer=gen-l-vrt-440
+#export peerbf2=gen-l-vrt-440-bf
 export hname=`hostname`
 
 export numvfs=1

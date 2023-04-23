@@ -13,7 +13,7 @@ ln -sfn  $ldir latest
 
 cd /images/testvfe
 
-#tools/update_bundle.sh | tee $ldir/update_bundle.log
+tools/update_bundle.sh | tee $ldir/update_bundle.log
 ./tools/_show_ver.sh | tee $ldir/version
 dmesg -c 1> /dev/null
 

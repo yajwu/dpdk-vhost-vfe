@@ -32,32 +32,41 @@ function run_main {
 
 	for tc in $cases; do
 		export testlog=$logdir/$tc.log
+		export skip_case=0
+
 		. ./$tc
 
+
 		[ -n "$its_overwrite" ] && testits=$its_overwrite
-		loginfo "$tc begins with total iteration $testits"
 
-		testcase_pre
-		ret="pass"
+        if [ $skip_case -eq 0 ]; then
+            loginfo "$tc begins with total iteration $testits"
 
-		for it in `seq $testits`; do
-			loginfo "$tc iteration $it / $testits"
-			testcase_run
-			if [ $? -ne 0 ]; then
-				logerr " !!!! test $tc run failed with $? !!!!"
-				ret="fail"
-				break
-			fi
-			testcase_check
-			if [ $? -ne 0 ]; then
-				logerr " !!!! test $tc failed with $? !!!!"
-				ret="fail"
-				break
-			fi
-		done
+            testcase_pre
+            ret="pass"
+            for it in `seq $testits`; do
+                loginfo "$tc iteration $it / $testits"
+                testcase_run
+                if [ $? -ne 0 ]; then
+                    logerr " !!!! test $tc run failed with $? !!!!"
+                    ret="fail"
+                    break
+                fi
+                testcase_check
+                if [ $? -ne 0 ]; then
+                    logerr " !!!! test $tc failed with $? !!!!"
+                    ret="fail"
+                    break
+                fi
+            done
+			testcase_clean
+        else
+			loginfo "skip $tc"
+			ret="skip"
+
+        fi
 
 		echo "$tc $testits $ret" >> $testresult
-		testcase_clean
 		[[ "$ret" == "fail" && "$stop_on_error" == "yes" ]] && break
 	done
 
