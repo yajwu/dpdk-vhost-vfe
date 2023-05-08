@@ -1,0 +1,197 @@
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+  <name>gen-l-vrt-440-162-CentOS-7.4</name>
+  <uuid>b4ed39e9-a3fe-484f-97d2-ffc2045aea01</uuid>
+  <memory unit='KiB'>4194304</memory>
+  <currentMemory unit='KiB'>4194304</currentMemory>
+  <memoryBacking>
+    <hugepages>
+      <page size='1048576' unit='KiB'/>
+    </hugepages>
+  </memoryBacking>
+  <vcpu placement='static'>4</vcpu>
+  <os>
+    <type arch='x86_64' machine='pc-i440fx-4.2'>hvm</type>
+    <boot dev='hd'/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+  </features>
+  <cpu mode='custom' match='exact' check='partial'>
+    <model fallback='allow'>Cascadelake-Server-noTSX</model>
+    <numa>
+      <cell id='0' cpus='0-3' memory='4194304' unit='KiB' memAccess='shared'/>
+    </numa>
+  </cpu>
+  <clock offset='utc'>
+    <timer name='rtc' tickpolicy='catchup'/>
+    <timer name='pit' tickpolicy='delay'/>
+    <timer name='hpet' present='no'/>
+  </clock>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <pm>
+    <suspend-to-mem enabled='no'/>
+    <suspend-to-disk enabled='no'/>
+  </pm>
+  <devices>
+    <emulator>/images/testvfe/sw/qemu/bin/x86_64-softmmu/qemu-system-x86_64</emulator>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='/images/gen-l-vrt-440-162/gen-l-vrt-440-162.img'/>
+      <target dev='sda' bus='sata'/>
+      <address type='drive' controller='0' bus='0' target='0' unit='0'/>
+    </disk>
+    <controller type='usb' index='0' model='ich9-ehci1'>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x7'/>
+    </controller>
+    <controller type='usb' index='0' model='ich9-uhci1'>
+      <master startport='0'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0' multifunction='on'/>
+    </controller>
+    <controller type='usb' index='0' model='ich9-uhci2'>
+      <master startport='2'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x1'/>
+    </controller>
+    <controller type='usb' index='0' model='ich9-uhci3'>
+      <master startport='4'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x2'/>
+    </controller>
+    <controller type='pci' index='0' model='pci-root'/>
+    <controller type='sata' index='0'>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/>
+    </controller>
+    <interface type='bridge'>
+      <mac address='00:50:56:30:79:a2'/>
+      <source bridge='br0'/>
+      <model type='e1000'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
+    </interface>
+    <serial type='pty'>
+      <target type='isa-serial' port='0'>
+        <model name='isa-serial'/>
+      </target>
+    </serial>
+    <console type='pty'>
+      <target type='serial' port='0'/>
+    </console>
+    <input type='mouse' bus='ps2'/>
+    <input type='keyboard' bus='ps2'/>
+    <graphics type='vnc' port='-1' autoport='yes'>
+      <listen type='address'/>
+    </graphics>
+    <video>
+      <model type='cirrus' vram='16384' heads='1' primary='yes'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/>
+    </video>
+    <memballoon model='virtio'>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x06' function='0x0'/>
+    </memballoon>
+  </devices>
+ <qemu:commandline>
+
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet1,path=/tmp/vfe-net0,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet1,queues=4,id=hostnet1'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,vectors=6,netdev=hostnet1,id=net1,mac=00:00:04:40:62:00,bus=pci.0,multifunction=on,addr=0x7.0,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet2,path=/tmp/vfe-net1,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet2,queues=4,id=hostnet2'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,vectors=6,netdev=hostnet2,id=net2,mac=00:00:04:40:62:01,bus=pci.0,multifunction=on,addr=0x7.0x1,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet3,path=/tmp/vfe-net2,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet3,queues=4,id=hostnet3'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,vectors=6,netdev=hostnet3,id=net3,mac=00:00:04:40:62:02,bus=pci.0,multifunction=on,addr=0x7.2,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet4,path=/tmp/vfe-net3,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet4,queues=4,id=hostnet4'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,vectors=6,netdev=hostnet4,id=net4,mac=00:00:04:40:62:03,bus=pci.0,multifunction=on,addr=0x7.3,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet5,path=/tmp/vfe-net4,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet5,queues=4,id=hostnet5'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,netdev=hostnet5,id=net5,mac=00:00:04:40:62:04,bus=pci.0,addr=0xb,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet6,path=/tmp/vfe-net5,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet6,queues=4,id=hostnet6'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,netdev=hostnet6,id=net6,mac=00:00:04:40:62:05,bus=pci.0,addr=0xc,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet7,path=/tmp/vfe-net6,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet7,queues=4,id=hostnet7'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,netdev=hostnet7,id=net7,mac=00:00:04:40:62:06,bus=pci.0,addr=0xd,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet8,path=/tmp/vfe-net7,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet8,queues=4,id=hostnet8'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,netdev=hostnet8,id=net8,mac=00:00:04:40:62:07,bus=pci.0,addr=0xe,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet9,path=/tmp/vfe-net8,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet9,queues=4,id=hostnet9'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,netdev=hostnet9,id=net9,mac=00:00:04:40:62:08,bus=pci.0,multifunction=on,addr=0x8.0,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet10,path=/tmp/vfe-net9,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet10,queues=4,id=hostnet10'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,netdev=hostnet10,id=net10,mac=00:00:04:40:62:09,bus=pci.0,multifunction=on,addr=0x8.1,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet11,path=/tmp/vfe-net10,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet11,queues=4,id=hostnet11'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,netdev=hostnet11,id=net11,mac=00:00:04:40:62:10,bus=pci.0,multifunction=on,addr=0x8.2,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet12,path=/tmp/vfe-net11,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet12,queues=4,id=hostnet12'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,netdev=hostnet12,id=net12,mac=00:00:04:40:62:11,bus=pci.0,multifunction=on,addr=0x8.3,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet14,path=/tmp/vfe-net12,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet14,queues=4,id=hostnet14'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,netdev=hostnet14,id=net14,mac=00:00:04:40:62:12,bus=pci.0,multifunction=on,addr=0x9.0,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet15,path=/tmp/vfe-net13,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet15,queues=4,id=hostnet15'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,netdev=hostnet15,id=net15,mac=00:00:04:40:62:13,bus=pci.0,multifunction=on,addr=0x9.1,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet16,path=/tmp/vfe-net14,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet16,queues=4,id=hostnet16'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,netdev=hostnet16,id=net16,mac=00:00:04:40:62:14,bus=pci.0,multifunction=on,addr=0x9.2,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+    <qemu:arg value='-chardev'/>
+    <qemu:arg value='socket,id=charnet17,path=/tmp/vfe-net15,server'/>
+    <qemu:arg value='-netdev'/>
+    <qemu:arg value='vhost-user,chardev=charnet17,queues=4,id=hostnet17'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-net-pci,mq=on,netdev=hostnet17,id=net17,mac=00:00:04:40:62:15,bus=pci.0,multifunction=on,addr=0x9.3,page-per-vq=on,rx_queue_size=1024,tx_queue_size=1024,disable-legacy=on,disable-modern=off'/>
+
+
+
+  </qemu:commandline>
+</domain>
+
