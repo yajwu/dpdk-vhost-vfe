@@ -86,6 +86,7 @@ class JsonRpcVirtnetClient(object):
             except ValueError:
                 continue  # incomplete response; keep buffering
 
+        self.sock.shutdown(socket.SHUT_RDWR)
         self.sock.close()
 
         if not response:
