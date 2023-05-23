@@ -95,7 +95,7 @@ function add_pf_vfs() {
 
 	#read
 	runcmd python sw/dpdk/app/vfe-vdpa/vhostmgmt mgmtpf -a ${pfslot}
-	runcmd sleep 8
+	runcmd sleep 18
 
 	#loginfo "W.A. set sriov_numvfs to $numvfs "
 	#[[ ${testtype} == "net" ]] && echo $numvfs > /sys/bus/pci/devices/${netpf}/sriov_numvfs && sleep 2
