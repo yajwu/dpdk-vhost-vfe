@@ -18,7 +18,7 @@ function restart_controller {
 		# work around to restart snap
 		loginfo "remove !!!!restart virtio-net-controller on bf2 as W.A."
 		runbf2cmd $bf2ip 'systemctl restart virtio-net-controller'
-		runcmd sleep 8
+		runcmd sleep 18
 		runbf2cmd $bf2ip 'virtnet modify -p 0 device -f 0x32300470028'
 	fi
 }
