@@ -16,6 +16,7 @@ export testits=5
 function testcase_pre {
 	runsshcmd $peer virsh destroy $vmname
 	start_peer net
+	sleep 60
 	ping_pre
 	# with VIRTIO_NET_F_GUEST_ANNOUNCE, no need bi-direction ping
 	#runsshcmd_bg $vmip ping $p0ip -i 0.5
@@ -26,7 +27,6 @@ function testcase_pre {
 	vm_check_down $peer $vmname || return 1
 
 	# todo add check instead of sleep
-	sleep 30
 }
 
 function testcase_run {
