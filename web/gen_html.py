@@ -28,11 +28,11 @@ for i in range(0, len(a)):
 t.border = True
 #t.format = True
 #t.add_row(a[i].split(','))
-
 # gen index page
 css = open("css.html", 'r')
 
-code = t[:10].get_html_string(sortby="Date", reversesort=True)
+
+code = t[:10].get_html_string()
 code = re.sub("fail", "<mark>fail</mark>", code)
 html_file = open('index.html', 'w')
 
@@ -47,7 +47,7 @@ html_file.write(code)
 # gen month page
 css = open("css.html", 'r')
 
-code = t.get_html_string(sortby="Date", reversesort=True)
+code = t.get_html_string()
 code = re.sub("fail", "<mark>fail</mark>", code)
 html_file = open(mon+".html", 'w')
 
