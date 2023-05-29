@@ -1,9 +1,9 @@
 #!/bin/bash
 
-mon="2023_05_*"
+mon=${1}
 
-results=`ls -t /images/nightly/$mon/result`
-fname=`hostname`.csv
+results=`ls -t /images/nightly/${mon}_*/result`
+fname=`hostname`-$mon.csv
 
 > $fname
 for i in $results; do
