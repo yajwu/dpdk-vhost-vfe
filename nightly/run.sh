@@ -17,6 +17,8 @@ cd /images/testvfe
 ./tools/_show_ver.sh | tee $ldir/version
 dmesg -c 1> /dev/null
 
+echo error > $ldir/result
+
 ./run_net.sh
 cp -rf latest $ldir/run_net_log
 dmseg -c > $ldir/run_net_log/dmesg

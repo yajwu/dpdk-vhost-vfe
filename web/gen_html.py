@@ -31,9 +31,10 @@ t.border = True
 # gen index page
 css = open("css.html", 'r')
 
-
+# gen index page
 code = t[:10].get_html_string()
 code = re.sub("fail", "<mark>fail</mark>", code)
+code = re.sub("error", "<mark>error</mark>", code)
 html_file = open('index.html', 'w')
 
 with open('index.md', 'r') as f:
@@ -49,6 +50,7 @@ css = open("css.html", 'r')
 
 code = t.get_html_string()
 code = re.sub("fail", "<mark>fail</mark>", code)
+code = re.sub("error", "<mark>error</mark>", code)
 html_file = open(mon+".html", 'w')
 
 with open('index.md', 'r') as f:
