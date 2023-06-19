@@ -23,6 +23,7 @@ t = PrettyTable(["Date", "Host", "Version", "Result", "Note"])
 for i in range(0, len(a)):
     d,h,v,s,n = a[i].split(',')
     s = re.sub('@', "\n", s)
+    v = re.sub('@', "\n", v)
     t.add_row([d,h,v,s,n])
 
 t.border = True
