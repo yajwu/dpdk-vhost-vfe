@@ -8,11 +8,14 @@
 
 #include <rte_io.h>
 #include <rte_bus.h>
+#include <rte_malloc.h>
+#include <rte_eal_paging.h>
 
 #include "virtio_pci.h"
 #include "virtio_logs.h"
 #include "virtqueue.h"
 #include "virtio_pci_state.h"
+#include "virtio_api.h"
 
 struct virtio_net_dev_state {
 	struct virtio_dev_common_state common_state;
@@ -40,6 +43,8 @@ modern_net_get_queue_num(struct virtio_hw *hw)
 	}
 
 	nr_vq = hw->max_queue_pairs * 2;
+	if (virtio_with_feature(hw, VIRTIO_NET_F_CTRL_VQ))
+		nr_vq += 1;
 
 	PMD_INIT_LOG(DEBUG, "Virtio net nr_vq is %d", nr_vq);
 	return nr_vq;
@@ -100,6 +105,130 @@ modern_net_dev_state_init(void *state)
 	state_net->rxomd.val = rte_cpu_to_le_32(state_net->rxomd.val);
 }
 
+static int
+modern_net_init_cvq(struct virtio_hw *hw)
+{
+	const struct rte_memzone *mz = NULL, *hdr_mz = NULL;
+	struct virtio_pci_dev *vpdev = virtio_pci_get_dev(hw);
+	struct virtio_pci_dev_vring_info vr_info;
+	char vq_hdr_name[VIRTQUEUE_MAX_NAME_SZ];
+	char vq_name[VIRTQUEUE_MAX_NAME_SZ];
+	struct virtnet_ctl *cvq = NULL;
+	unsigned int vq_size, size;
+	struct virtqueue *vq;
+	size_t sz_hdr_mz = 0;
+	uint16_t queue_idx;
+	int ret, numa_node;
+
+	queue_idx = hw->max_queue_pairs * 2;
+	vq_size = virtio_pci_dev_queue_size_get(vpdev, queue_idx);
+	numa_node = VTPCI_DEV(hw)->device.numa_node;
+
+	if (!hw->vqs || !hw->vqs[queue_idx]) {
+		PMD_INIT_LOG(ERR, "vqs or vq is NULL");
+		return -ENOMEM;
+	}
+	PMD_INIT_LOG(INFO, "control queue idx %u, queue size %u, numa %d",
+			queue_idx, vq_size, numa_node);
+
+	snprintf(vq_name, sizeof(vq_name), "vdev%d_cvq%u",
+			vpdev->vfio_dev_fd, queue_idx);
+
+	size = RTE_ALIGN_CEIL(sizeof(*vq) +
+			vq_size * sizeof(struct vq_desc_extra),
+			RTE_CACHE_LINE_SIZE);
+
+	vq = rte_realloc_socket(hw->vqs[queue_idx], size, RTE_CACHE_LINE_SIZE,
+			numa_node);
+	if (vq == NULL) {
+		PMD_INIT_LOG(ERR, "can not allocate control q %u", queue_idx);
+		return -ENOMEM;
+	}
+	hw->vqs[queue_idx] = vq;
+
+	vq->hw = hw;
+	vq->vq_queue_index = queue_idx;
+	vq->vq_nentries = vq_size;
+
+	/*
+	 * Reserve a memzone for vring elements
+	 */
+	size = vring_size(hw, vq_size, VIRTIO_VRING_ALIGN);
+	vq->vq_ring_size = RTE_ALIGN_CEIL(size, VIRTIO_VRING_ALIGN);
+
+	mz = rte_memzone_reserve_aligned(vq_name, vq->vq_ring_size,
+			numa_node, RTE_MEMZONE_IOVA_CONTIG,
+			VIRTIO_VRING_ALIGN);
+	if (mz == NULL) {
+		if (rte_errno == EEXIST)
+			mz = rte_memzone_lookup(vq_name);
+		if (mz == NULL) {
+			return -ENOMEM;
+		}
+	}
+
+	memset(mz->addr, 0, mz->len);
+
+	vq->vq_ring_mem = mz->iova;
+	vq->vq_ring_virt_mem = mz->addr;
+
+	virtio_pci_dev_init_vring(vq);
+
+	cvq = &vq->cq;
+	cvq->mz = mz;
+
+	/* Allocate a page for ctl vq command */
+	sz_hdr_mz = rte_mem_page_size();
+
+	if (sz_hdr_mz) {
+		snprintf(vq_hdr_name, sizeof(vq_hdr_name), "vdev%d_cq%u_hdr",
+				vpdev->vfio_dev_fd, queue_idx);
+		hdr_mz = rte_memzone_reserve_aligned(vq_hdr_name, sz_hdr_mz,
+				numa_node, RTE_MEMZONE_IOVA_CONTIG,
+				sz_hdr_mz);
+		if (hdr_mz == NULL) {
+			if (rte_errno == EEXIST)
+				hdr_mz = rte_memzone_lookup(vq_hdr_name);
+			if (hdr_mz == NULL) {
+				ret = -ENOMEM;
+				goto err_free_mz;
+			}
+		}
+		cvq->virtio_net_hdr_mz = hdr_mz;
+		cvq->virtio_net_hdr_mem = hdr_mz->iova;
+		memset(cvq->virtio_net_hdr_mz->addr, 0, sz_hdr_mz);
+	} else {
+		PMD_INIT_LOG(ERR, "rte mem page size is zero");
+		ret = -EINVAL;
+		goto err_free_mz;
+	}
+
+	hw->cvq = cvq;
+
+	vr_info.size  = vq_size;
+	vr_info.desc  = (uint64_t)(uintptr_t)vq->vq_split.ring.desc;
+	vr_info.avail = (uint64_t)(uintptr_t)vq->vq_split.ring.avail;
+	vr_info.used  = (uint64_t)(uintptr_t)vq->vq_split.ring.used;
+	/* No need write bar here, set by restore */
+	ret = virtio_pci_dev_queue_set(vpdev, queue_idx, &vr_info, false);
+	if (ret) {
+		PMD_INIT_LOG(ERR, "setup_queue %u failed", queue_idx);
+		ret = -EINVAL;
+		goto err_clean_cvq;
+	}
+	PMD_INIT_LOG(DEBUG, "%s alloc CVQ mz 0x%"PRIx64" hdr_mz 0x%"PRIx64,
+		VTPCI_DEV(hw)->device.name, cvq->mz->addr_64, cvq->virtio_net_hdr_mz->addr_64);
+
+	return 0;
+
+err_clean_cvq:
+	rte_memzone_free(hdr_mz);
+	hw->cvq = NULL;
+err_free_mz:
+	rte_memzone_free(mz);
+	return ret;
+}
+
 const struct virtio_dev_specific_ops virtio_net_dev_pci_modern_ops = {
 	.get_queue_num = modern_net_get_queue_num,
 	.get_dev_cfg_size = modern_net_get_dev_cfg_size,
@@ -107,4 +236,5 @@ const struct virtio_dev_specific_ops virtio_net_dev_pci_modern_ops = {
 	.get_state_size = modern_net_get_state_size,
 	.dev_cfg_dump = modern_net_dev_cfg_dump,
 	.dev_state_init = modern_net_dev_state_init,
+	.dev_init_cvq = modern_net_init_cvq,
 };
