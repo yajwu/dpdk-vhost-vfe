@@ -38,7 +38,7 @@ virtio_vdpa_net_dirty_desc_get(int vid, int qix, uint64_t *desc_addr, uint32_t *
 
 	ret = rte_vhost_get_vhost_vring(vid, qix, &vq);
 	if (ret) {
-		NET_LOG(ERR, "VID: %d qix:%d fail get vhost ring", vid, qix);
+		NET_LOG(ERR, "VID: %d qix:%d fail get vhost ring, ret %d", vid, qix, ret);
 		return -ENODEV;
 	}
 

@@ -28,6 +28,7 @@ struct virtio_vdpa_vring_info {
 struct virtio_vdpa_priv {
 	TAILQ_ENTRY(virtio_vdpa_priv) next;
 	const struct rte_memzone *vdpa_dp_map;
+	const struct rte_memzone *cvq_log_mz;
 	struct virtio_vdpa_pf_priv *pf_priv;
 	struct rte_pci_device *pdev;
 	struct rte_vdpa_device *vdev;

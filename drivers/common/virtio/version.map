@@ -12,6 +12,7 @@ INTERNAL {
 	virtio_pci_dev_state_features_get;
 	virtio_pci_dev_state_features_set;
 	virtio_pci_dev_queue_set;
+	virtio_pci_dev_queue_get;
 	virtio_pci_dev_queue_del;
 	virtio_pci_dev_state_hw_idx_set;
 	virtio_pci_dev_state_hw_idx_get;
@@ -39,6 +40,9 @@ INTERNAL {
 	virtio_pci_dev_state_size_get;
 	virtio_pci_dev_state_num_queue_set;
 	virtio_pci_dev_isr_get;
+	virtio_pci_dev_init_cvq;
+	virtio_pci_dev_init_vring;
+	virtio_pci_dev_mac_addr_set;
 
 	local: *;
 };

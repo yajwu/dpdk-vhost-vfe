@@ -758,6 +758,16 @@ virtio_vdpa_dev_set_mem_table(int vid)
 #define PAGE_SIZE   (sysconf(_SC_PAGESIZE))
 #endif
 
+
+static int 
+virtio_vdpa_cvq_get_mz_length(struct virtio_vdpa_priv *priv) 
+{
+	struct virtio_hw *hw = &priv->vpdev->hw;
+	struct virtnet_ctl *cvq = hw->cvq;
+
+	return cvq->mz->len + cvq->virtio_net_hdr_mz->len;
+}
+
 static int
 virtio_vdpa_features_set(int vid)
 {
@@ -766,9 +776,9 @@ virtio_vdpa_features_set(int vid)
 		virtio_vdpa_find_priv_resource_by_vdev(vdev);
 	uint64_t log_base, log_size, max_phy, log_size_align;
 	uint64_t features;
-	struct virtio_sge lb_sge;
+	struct virtio_sge lb_sge[3];
 	rte_iova_t iova;
-	int ret;
+	int ret, sge_num = 1;
 
 	if (priv == NULL) {
 		DRV_LOG(ERR, "Invalid vDPA device: %s", vdev->device->name);
@@ -818,8 +828,8 @@ virtio_vdpa_features_set(int vid)
 			return ret;
 		}
 
-		lb_sge.addr = log_base;
-		lb_sge.len = log_size;
+		lb_sge[0].addr = log_base;
+		lb_sge[0].len = log_size;
 		ret = virtio_vdpa_max_phy_addr_get(priv, &max_phy);
 		if (ret) {
 			DRV_LOG(ERR, "%s failed to get max phy addr",
@@ -827,8 +837,37 @@ virtio_vdpa_features_set(int vid)
 			return ret;
 		}
 
-		ret = virtio_vdpa_cmd_dirty_page_start_track(priv->pf_priv, priv->vf_id, VIRTIO_M_DIRTY_TRACK_PUSH_BITMAP, PAGE_SIZE, 0, max_phy, 1, &lb_sge);
-		DRV_LOG(INFO, "%s vfid %d start track max phy:%" PRIx64 "log_base %" PRIx64 "log_size %" PRIx64,
+		if (priv->guest_features & (1ull << VIRTIO_NET_F_CTRL_VQ)) {
+			const struct rte_memzone *vdpa_dp_map;
+			char dp_mzone_name[64];
+			int cvq_mz_len;
+
+			cvq_mz_len = virtio_vdpa_cvq_get_mz_length(priv);
+
+			snprintf(dp_mzone_name, sizeof(dp_mzone_name), "virtio_vdpa_cvq_log_mz_%u",
+					priv->vid);
+
+			/* alloc one page */
+			priv->cvq_log_mz = rte_memzone_reserve_aligned(dp_mzone_name,
+					cvq_mz_len, rte_socket_id(), RTE_MEMZONE_IOVA_CONTIG,
+					PAGE_SIZE);
+			if (!priv->cvq_log_mz) {
+				DRV_LOG(ERR, "%s failed to get max phy addr",
+							priv->vdev->device->name);
+				return -ENOMEM;
+			}
+
+			sge_num += 1;
+
+			lb_sge[1].addr = priv->cvq_log_mz->addr;
+			lb_sge[1].len = priv->cvq_log_mz->len;
+
+			max_phy += priv->cvq_log_mz->len;
+			DRV_LOG(INFO, "yajun: CVQ enabled, add log buf for CVQ pages");
+		}
+
+		ret = virtio_vdpa_cmd_dirty_page_start_track(priv->pf_priv, priv->vf_id, VIRTIO_M_DIRTY_TRACK_PUSH_BITMAP, PAGE_SIZE, 0, max_phy, sge_num, lb_sge);
+		DRV_LOG(INFO, "%s vfid %d start track max phy:%" PRIx64 " log_base %" PRIx64 " log_size %" PRIx64,
 					priv->vdev->device->name, priv->vf_id, max_phy , log_base, log_size);
 		if (ret) {
 			DRV_LOG(ERR, "%s failed to start track ret:%d",
@@ -842,6 +881,9 @@ virtio_vdpa_features_set(int vid)
 	/* TO_DO: check why --- */
 	features |= (1ULL << VIRTIO_F_IOMMU_PLATFORM);
 	features |= (1ULL << VIRTIO_F_RING_RESET);
+	features |= (1ULL << VIRTIO_NET_F_CTRL_VQ);
+	features |= (1ULL << VIRTIO_NET_F_MAC);
+
 	if (priv->configured)
 		DRV_LOG(ERR, "%s vid %d set feature after driver ok, only when live migration", priv->vdev->device->name, vid);
 	else
@@ -851,6 +893,64 @@ virtio_vdpa_features_set(int vid)
 					priv->vdev->device->name, vid,
 					priv->guest_features, features);
 
+	return 0;
+}
+
+static int 
+virtio_vdpa_cvq_dma_map(struct virtio_vdpa_priv *priv, uint64_t iova_base)
+{
+	uint64_t iova = iova_base;
+	struct virtio_hw *hw = &priv->vpdev->hw;
+	struct virtnet_ctl *cvq = hw->cvq;
+	int ret;
+
+	// dma map memory for cvq
+	DRV_LOG(INFO, "%s addr 0x%"PRIx64", iova 0x%"PRIx64", size 0x%" PRIx64,
+			priv->vdev->device->name, cvq->mz->addr_64, iova, cvq->mz->len);
+	ret = rte_vfio_container_dma_map(priv->vfio_container_fd,
+			cvq->mz->addr_64, iova, cvq->mz->len);
+	if (ret < 0) {
+		DRV_LOG(ERR, "%s CVQ DMA map failed ret:%d",
+				priv->vdev->device->name, ret);
+		return -ENOMEM;
+	}
+
+	cvq->mz_iova = iova;
+	iova += cvq->mz->len;
+
+	DRV_LOG(INFO, "%s addr 0x%"PRIx64", iova 0x%"PRIx64", size 0x%" PRIx64,
+			priv->vdev->device->name, cvq->virtio_net_hdr_mz->addr_64, iova,
+			cvq->virtio_net_hdr_mz->len);
+	ret = rte_vfio_container_dma_map(priv->vfio_container_fd,
+			cvq->virtio_net_hdr_mz->addr_64, iova,
+			cvq->virtio_net_hdr_mz->len);
+
+	if (ret < 0) {
+		DRV_LOG(ERR, "%s CVQ DMA map failed ret:%d",
+				priv->vdev->device->name, ret);
+		rte_vfio_container_dma_unmap(priv->vfio_container_fd,
+				cvq->mz->addr_64, cvq->mz_iova, cvq->mz->len);
+		cvq->mz_iova = 0;
+		return -ENOMEM;
+	}
+	cvq->mz_hdr_iova = iova;
+	return 0;
+}
+
+static int 
+virtio_vdpa_cvq_dma_unmap(struct virtio_vdpa_priv *priv)
+{
+	struct virtio_hw *hw = &priv->vpdev->hw;
+	struct virtnet_ctl *cvq = hw->cvq;
+
+	rte_vfio_container_dma_unmap(priv->vfio_container_fd,
+		cvq->mz->addr_64, cvq->mz_iova, cvq->mz->len);
+	rte_vfio_container_dma_map(priv->vfio_container_fd,
+		cvq->virtio_net_hdr_mz->addr_64,
+		cvq->mz_hdr_iova, cvq->virtio_net_hdr_mz->len);
+	DRV_LOG(ERR, "%s DMA unmap  0x%"PRIx64", 0x%"PRIx64", for CVQ",
+		priv->vdev->device->name,
+		cvq->mz->addr_64, cvq->virtio_net_hdr_mz->addr_64);
 	return 0;
 }
 
@@ -949,7 +1049,10 @@ virtio_vdpa_dev_close(int vid)
 			DRV_LOG(ERR, "%s log buffer DMA map failed ret:%d",
 						priv->vdev->device->name, ret);
 		}
-
+		if (priv->cvq_log_mz) {
+			rte_memzone_free(priv->cvq_log_mz);
+			priv->cvq_log_mz = NULL;
+		}
 	}
 	ret = virtio_vdpa_cmd_get_internal_pending_bytes(priv->pf_priv, priv->vf_id, &res);
 	if (ret) {
@@ -1024,7 +1127,7 @@ virtio_vdpa_dev_close(int vid)
 	virtio_pci_dev_state_dev_status_set(priv->state_mz->addr, VIRTIO_CONFIG_STATUS_ACK |
 													VIRTIO_CONFIG_STATUS_DRIVER);
 
-
+	virtio_vdpa_cvq_dma_unmap(priv);
 
 	virtio_vdpa_lcore_id = rte_get_next_lcore(virtio_vdpa_lcore_id, 1, 1);
 	priv->lcore_id = virtio_vdpa_lcore_id;
@@ -1040,6 +1143,36 @@ virtio_vdpa_dev_close(int vid)
 }
 
 static int
+virtio_vdpa_state_cvq_set(struct virtio_vdpa_priv *priv)
+{
+	struct virtio_pci_dev_vring_info vring_info;
+	struct virtio_hw *hw = &priv->vpdev->hw;
+	struct virtnet_ctl *cvq = hw->cvq;
+	int ret;
+	int vq_idx =  hw->max_queue_pairs * 2;
+
+	ret = virtio_pci_dev_queue_get(priv->vpdev, vq_idx, &vring_info);
+	if (ret) {
+		DRV_LOG(ERR, "%s get CVQ info failed", priv->vdev->device->name);
+		return -EINVAL;
+	}
+
+    // TODO:
+	vring_info.desc = cvq->mz_iova + vring_info.desc - cvq->mz->addr_64;
+	vring_info.avail = cvq->mz_iova + vring_info.avail - cvq->mz->addr_64;
+	vring_info.used = cvq->mz_iova + vring_info.used - cvq->mz->addr_64;
+
+	ret = virtio_pci_dev_state_queue_set(priv->vpdev, vq_idx, &vring_info,
+			priv->state_mz->addr);
+	if (ret) {
+		DRV_LOG(ERR, "%s CVQ set state failed", priv->vdev->device->name);
+		return -EINVAL;
+	}
+	return 0;
+}
+
+
+static int
 virtio_vdpa_dev_config(int vid)
 {
 	struct rte_vdpa_device *vdev = rte_vhost_get_vdpa_device(vid);
@@ -1047,7 +1180,7 @@ virtio_vdpa_dev_config(int vid)
 		virtio_vdpa_find_priv_resource_by_vdev(vdev);
 	uint16_t last_avail_idx, last_used_idx, nr_virtqs;
 	uint64_t t_start = rte_rdtsc_precise();
-	uint64_t t_end;
+	uint64_t t_end, max_phy;
 	int ret, i;
 
 	if (priv == NULL) {
@@ -1078,6 +1211,9 @@ virtio_vdpa_dev_config(int vid)
 					vdev->device->name, priv->nvec, nr_virtqs + 1);
 	}
 
+	DRV_LOG(INFO, ">> nr_virtqs %d, hw_nr_virtqs %d", nr_virtqs, priv->hw_nr_virtqs);
+
+
 	priv->vid = vid;
 
 	for (i = 0; i < nr_virtqs; i++) {
@@ -1097,6 +1233,23 @@ virtio_vdpa_dev_config(int vid)
 											last_used_idx, priv->state_mz->addr);
 		if (ret) {
 			DRV_LOG(ERR, "%s error get vring base ret:%d", vdev->device->name, ret);
+			rte_errno = rte_errno ? rte_errno : EINVAL;
+			return -rte_errno;
+		}
+	}
+
+// map cvq memory after GPA region
+	if (priv->guest_features & (1ull << VIRTIO_NET_F_CTRL_VQ)) {
+		ret = virtio_vdpa_max_phy_addr_get(priv, &max_phy);
+		if (ret) {
+			DRV_LOG(ERR, "%s failed to get max phy addr",
+						priv->vdev->device->name);
+		}
+		virtio_vdpa_cvq_dma_map(priv, max_phy);
+		DRV_LOG(INFO, ">> has_cvq");
+		ret = virtio_vdpa_state_cvq_set(priv);
+		if (ret) {
+			DRV_LOG(ERR, "%s CVQ setup err: %d", vdev->device->name, ret);
 			rte_errno = rte_errno ? rte_errno : EINVAL;
 			return -rte_errno;
 		}
@@ -1137,6 +1290,13 @@ virtio_vdpa_dev_config(int vid)
 	t_end  = rte_rdtsc_precise();
 	DRV_LOG(INFO, "%s vid %d was configured, took %lu us.", vdev->device->name,
             vid, (t_end - t_start) * 1000000 / rte_get_tsc_hz());
+
+
+    // cvq test cmd
+    sleep(5);
+    uint64_t mac=0x112233445566;
+    ret = virtio_pci_dev_mac_addr_set(&priv->vpdev->hw, (struct rte_ether_addr *)&mac);
+	DRV_LOG(INFO, "%s return %d", vdev->device->name, ret);
 
 	return 0;
 }
@@ -1386,6 +1546,8 @@ static int
 virtio_vdpa_dev_do_remove(struct rte_pci_device *pci_dev, struct virtio_vdpa_priv *priv)
 {
 	bool ret;
+	uint64_t features = 0;
+	struct virtnet_ctl *cvq;
 
 	if (!priv)
 		return 0;
@@ -1499,6 +1661,8 @@ virtio_vdpa_dev_probe(struct rte_pci_driver *pci_drv __rte_unused,
 	int iommu_group_num;
 	size_t mz_len;
 	int retries = VIRTIO_VDPA_GET_GROUPE_RETRIES;
+	uint64_t features = 0;
+	struct virtio_hw *hw;
 
 	rte_pci_device_name(&pci_dev->addr, devname, RTE_DEV_NAME_MAX_LEN);
 
@@ -1606,6 +1770,9 @@ virtio_vdpa_dev_probe(struct rte_pci_driver *pci_drv __rte_unused,
 		goto error;
 	}
 
+	/* enable CVQ driver feature */
+	features = virtio_pci_dev_features_set(priv->vpdev, 1ull << VIRTIO_NET_F_CTRL_VQ);
+
 	priv->hw_nr_virtqs = virtio_pci_dev_nr_vq_get(priv->vpdev);
 	ret = virtio_vdpa_queues_alloc(priv);
 	if (ret) {
@@ -1613,6 +1780,16 @@ virtio_vdpa_dev_probe(struct rte_pci_driver *pci_drv __rte_unused,
 					devname, ret);
 		rte_errno = rte_errno ? rte_errno : EINVAL;
 		goto error;
+	}
+
+	/* init CVQ */
+	if (features & (1ull << VIRTIO_NET_F_CTRL_VQ)) {
+		hw = &priv->vpdev->hw;
+		ret = virtio_pci_dev_init_cvq(hw);
+		if (ret) {
+			DRV_LOG(ERR, "%s failed to init CVQ for vDPA device", devname);
+			goto error;
+		}
 	}
 
 	priv->nvec = virtio_pci_dev_interrupts_num_get(priv->vpdev);

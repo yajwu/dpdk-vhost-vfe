@@ -302,6 +302,7 @@ struct virtqueue {
 	unsigned int vq_ring_size;
 
 	struct virtadmin_ctl aq;
+    struct virtnet_ctl cq;
 
 	rte_iova_t vq_ring_mem; /**< physical address of vring,
 	                         * or virtual address for virtio_user. */

@@ -891,3 +891,39 @@ int virtio_pci_dev_legacy_ioport_map(struct virtio_hw *hw)
 {
 	return rte_pci_ioport_map(VTPCI_DEV(hw), 0, VTPCI_IO(hw));
 }
+
+int
+virtio_pci_dev_init_cvq(struct virtio_hw *hw)
+{
+	if (hw->virtio_dev_sp_ops->dev_init_cvq)
+		return hw->virtio_dev_sp_ops->dev_init_cvq(hw);
+	return -ENOTSUP;
+}
+
+void
+virtio_pci_dev_init_vring(struct virtqueue *vq)
+{
+	uint8_t *ring_mem = vq->vq_ring_virt_mem;
+	int size = vq->vq_nentries;
+	struct vring *vr;
+
+	PMD_INIT_LOG(DEBUG, ">>");
+
+	memset(ring_mem, 0, vq->vq_ring_size);
+
+	vq->vq_used_cons_idx = 0;
+	vq->vq_desc_head_idx = 0;
+	vq->vq_avail_idx = 0;
+	vq->vq_desc_tail_idx = (uint16_t)(vq->vq_nentries - 1);
+	vq->vq_free_cnt = vq->vq_nentries;
+	memset(vq->vq_descx, 0, sizeof(struct vq_desc_extra) * vq->vq_nentries);
+	vr = &vq->vq_split.ring;
+
+	vring_init_split(vr, ring_mem, VIRTIO_VRING_ALIGN, size);
+	vring_desc_init_split(vr->desc, size);
+	/*
+	 * Disable device(host) interrupting guest
+	 */
+	virtqueue_disable_intr_split(vq);
+}
+

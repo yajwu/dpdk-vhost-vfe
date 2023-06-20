@@ -138,10 +138,12 @@ virtio_vdpa_rpc_check_dirty_logging(uint64_t dirty_addr, uint32_t dirty_len,
 	}
 
 	if ((start_byte + num_of_bytes) > log_size) {
-		RPC_LOG(ERR, "check_dirty_logging failed<<<<Too many pages>>>>");
+		RPC_LOG(ERR, "check_dirty_logging failed<<<<Too many pages>>>>, %lx, %lx", start_byte + num_of_bytes, log_size);
 		return -EINVAL;
 	}
 	/*check*/
+
+	RPC_LOG(ERR, ">> start_byte 0x%x num_of_bytes %d", start_byte, num_of_bytes);
 	for (i = 0; i < num_of_bytes; i++)
 		if (log_base[start_byte + i] != written_data) {
 			RPC_LOG(ERR, "check_dirty_logging failed<<<<Byte[%" PRIu64 "] should be 0x%x, actual is [%u]>>>>",
@@ -198,6 +200,11 @@ rte_vdpa_vf_dev_debug(const char *vf_name,
 				RPC_LOG(ERR, "<<<<Invalid VM memory size>>>>");
 				return -EINVAL;
 			}
+
+		if (vf_priv->guest_features & (1ull << VIRTIO_NET_F_CTRL_VQ)) {
+            range_length += 0x1000*8;
+			RPC_LOG(INFO, ">> Yajun: range_length %"PRIu64, range_length);
+        }
 			if ((vf_debug_info->test_mode == VIRTIO_M_DIRTY_TRACK_PUSH_BITMAP ||
 					vf_debug_info->test_mode == VIRTIO_M_DIRTY_TRACK_PULL_BITMAP))
 				unit = 8;
@@ -262,6 +269,24 @@ rte_vdpa_vf_dev_debug(const char *vf_name,
 								" dirty_len %d ret: %d", i, dirty_addr, dirty_len, ret);
 				}
 			}
+// cvq only
+            if (vf_priv->guest_features & (1ull << VIRTIO_NET_F_CTRL_VQ)) {
+				struct virtio_hw *hw = &vf_priv->vpdev->hw;
+				struct virtnet_ctl *cvq = hw->cvq;
+				uint64_t dirty_addr;
+				uint32_t dirty_len;
+				struct virtio_pci_dev_vring_info vring_info;
+
+				virtio_pci_dev_queue_get(vf_priv->vpdev, 14, &vring_info); //hardcode 14
+				dirty_addr = vring_info.used;
+				RPC_LOG(INFO, " >> Yajun: in check: %d, dirty_addr 0x%lx", ret, dirty_addr);
+				ret = virtio_vdpa_rpc_check_dirty_logging(dirty_addr, 
+						sizeof(struct vring_used),
+						vdpa_dp_mz->addr, vdpa_dp_mz->len,
+						vf_debug_info->test_mode, PAGE_SIZE);
+				RPC_LOG(INFO, " >> Yajun: in check: %d, dirty_addr 0x%lx", ret, dirty_addr);
+            }
+            
 			break;
 		default:
 			RPC_LOG(ERR, "Unsupported command %d", vf_debug_info->test_type);

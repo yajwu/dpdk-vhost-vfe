@@ -590,6 +590,8 @@ virtio_vdpa_cmd_dirty_page_start_track(struct virtio_vdpa_pf_priv *priv,
 		sd->sges[i].addr = rte_cpu_to_le_64((uint64_t)rte_mem_virt2iova((const void *)data[i].addr));
 		sd->sges[i].len = rte_cpu_to_le_32(data[i].len);
 		sd->sges[i].reserved = 0;
+        CMD_LOG(INFO, ">> %d: addr %p addr-iov %"PRIx64" len 0x%x", i, (const void *)data[i].addr, sd->sges[i].addr,
+                sd->sges[i].len);
 	}
 	dat_ctrl.num_in_data = 0;
 	dat_ctrl.num_out_data = 0;
@@ -754,33 +756,6 @@ virtio_vdpa_cmd_dirty_page_report_map(struct virtio_vdpa_pf_priv *priv,
 }
 
 static void
-virtio_vdpa_init_vring(struct virtqueue *vq)
-{
-	uint8_t *ring_mem = vq->vq_ring_virt_mem;
-	int size = vq->vq_nentries;
-	struct vring *vr;
-
-	DRV_LOG(DEBUG, ">>");
-
-	memset(ring_mem, 0, vq->vq_ring_size);
-
-	vq->vq_used_cons_idx = 0;
-	vq->vq_desc_head_idx = 0;
-	vq->vq_avail_idx = 0;
-	vq->vq_desc_tail_idx = (uint16_t)(vq->vq_nentries - 1);
-	vq->vq_free_cnt = vq->vq_nentries;
-	memset(vq->vq_descx, 0, sizeof(struct vq_desc_extra) * vq->vq_nentries);
-	vr = &vq->vq_split.ring;
-
-	vring_init_split(vr, ring_mem, VIRTIO_VRING_ALIGN, size);
-	vring_desc_init_split(vr->desc, size);
-	/*
-	 * Disable device(host) interrupting guest
-	 */
-	virtqueue_disable_intr_split(vq);
-}
-
-static void
 virtio_vdpa_destroy_aq_ctl(struct virtadmin_ctl *ctl)
 {
 	rte_memzone_free(ctl->mz);
@@ -851,7 +826,7 @@ virtio_vdpa_init_admin_queue(struct virtio_vdpa_pf_priv *priv)
 	vq->vq_ring_mem = mz->iova;
 	vq->vq_ring_virt_mem = mz->addr;
 
-	virtio_vdpa_init_vring(vq);
+	virtio_pci_dev_init_vring(vq);
 
 	avq = &vq->aq;
 	avq->mz = mz;
