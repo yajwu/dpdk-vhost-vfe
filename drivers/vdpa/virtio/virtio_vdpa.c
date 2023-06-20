@@ -1499,6 +1499,7 @@ virtio_vdpa_dev_probe(struct rte_pci_driver *pci_drv __rte_unused,
 	int iommu_group_num;
 	size_t mz_len;
 	int retries = VIRTIO_VDPA_GET_GROUPE_RETRIES;
+	uint64_t features = 0;
 
 	rte_pci_device_name(&pci_dev->addr, devname, RTE_DEV_NAME_MAX_LEN);
 
@@ -1606,6 +1607,9 @@ virtio_vdpa_dev_probe(struct rte_pci_driver *pci_drv __rte_unused,
 		goto error;
 	}
 
+	/* enable CVQ driver feature */
+	features = virtio_pci_dev_features_set(priv->vpdev, 1ull << VIRTIO_NET_F_CTRL_VQ);
+
 	priv->hw_nr_virtqs = virtio_pci_dev_nr_vq_get(priv->vpdev);
 	ret = virtio_vdpa_queues_alloc(priv);
 	if (ret) {
@@ -1613,6 +1617,17 @@ virtio_vdpa_dev_probe(struct rte_pci_driver *pci_drv __rte_unused,
 					devname, ret);
 		rte_errno = rte_errno ? rte_errno : EINVAL;
 		goto error;
+	}
+
+	/* init CVQ */
+	if (features & (1ull << VIRTIO_NET_F_CTRL_VQ)) {
+		ret = virtio_pci_dev_create_cvq(&priv->vpdev->hw,
+				priv->pdev->device.numa_node);
+		if (ret) {
+			DRV_LOG(ERR, "%s failed to init CVQ for vDPA device", devname);
+			rte_errno = rte_errno ? rte_errno : -ret;
+			goto error;
+		}
 	}
 
 	priv->nvec = virtio_pci_dev_interrupts_num_get(priv->vpdev);

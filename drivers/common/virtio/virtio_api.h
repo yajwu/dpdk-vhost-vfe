@@ -120,6 +120,8 @@ __rte_internal
 void virtio_pci_dev_state_num_queue_set(struct virtio_pci_dev *vpdev);
 __rte_internal
 uint8_t virtio_pci_dev_isr_get(struct virtio_pci_dev *vpdev);
+__rte_internal
+int virtio_pci_dev_create_cvq(struct virtio_hw *hw, int numa_node);
 
 
 #endif /* _VIRTIO_API_H_ */

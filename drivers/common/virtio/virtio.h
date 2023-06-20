@@ -119,6 +119,15 @@ struct virtadmin_ctl {
 	rte_spinlock_t lock;	    /**< spinlock for control queue. */
 };
 
+struct virtnet_ctl {
+	/**< memzone to populate hdr. */
+	const struct rte_memzone *virtio_net_hdr_mz;
+	rte_iova_t virtio_net_hdr_mem;  /**< hdr for each xmit packet */
+	uint16_t port_id;               /**< Device port identifier. */
+	const struct rte_memzone *mz;   /**< mem zone to populate CTL ring. */
+	rte_spinlock_t lock;              /**< spinlock for control queue. */
+};
+
 struct virtio_hw {
 	struct virtqueue **vqs;
 	uint64_t guest_features;
@@ -163,6 +172,8 @@ struct virtio_dev_specific_ops {
 	uint32_t (*get_state_size)(uint16_t num_queues);
 	void (*dev_cfg_dump)(void *f_hdr);
 	void (*dev_state_init)(void *state);
+	int (*dev_create_cvq)(struct virtio_hw *hw, int numa_node);
+	void (*dev_destroy_cvq)(struct virtio_hw *hw);
 };
 
 /*

@@ -891,3 +891,11 @@ int virtio_pci_dev_legacy_ioport_map(struct virtio_hw *hw)
 {
 	return rte_pci_ioport_map(VTPCI_DEV(hw), 0, VTPCI_IO(hw));
 }
+
+int
+virtio_pci_dev_create_cvq(struct virtio_hw *hw, int numa_node)
+{
+	if (hw->virtio_dev_sp_ops->dev_create_cvq)
+		return hw->virtio_dev_sp_ops->dev_create_cvq(hw, numa_node);
+	return -ENOTSUP;
+}

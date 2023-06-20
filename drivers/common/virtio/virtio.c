@@ -86,6 +86,13 @@ virtio_pci_dev_nr_vq_get(struct virtio_pci_dev *vpdev)
 	return VIRTIO_OPS(hw)->get_queue_num(hw);
 }
 
+static void
+virtio_vdpa_destroy_cq_ctl(struct virtnet_ctl *ctl)
+{
+	rte_memzone_free(ctl->mz);
+	rte_memzone_free(ctl->virtio_net_hdr_mz);
+}
+
 void
 virtio_pci_dev_queues_free(struct virtio_pci_dev *vpdev, uint16_t nr_vq)
 {
@@ -96,12 +103,17 @@ virtio_pci_dev_queues_free(struct virtio_pci_dev *vpdev, uint16_t nr_vq)
 	if (hw->vqs == NULL)
 		return;
 
+	if (hw->cvq) {
+		virtio_vdpa_destroy_cq_ctl(hw->cvq);
+		hw->cvq = NULL;
+	}
+
 	for (i = 0; i < nr_vq; i++) {
 		vq = hw->vqs[i];
-		if (!vq)
-			continue;
-		rte_free(vq);
-		hw->vqs[i] = NULL;
+		if (vq) {
+			rte_free(vq);
+			hw->vqs[i] = NULL;
+		}
 	}
 
 	rte_free(hw->vqs);
