@@ -18,6 +18,7 @@ dpdkver=`git -C /images/testvfe/sw/dpdk log --pretty=format:"%h %ad" --date=shor
 qemuver=`git -C /images/testvfe/sw/qemu log --pretty=format:"%h %ad" --date=short -1`
 echo -n -e "\ndpdk: $dpdkver"
 echo -n -e "\nqemu: $qemuver"
+echo
 
 
 
