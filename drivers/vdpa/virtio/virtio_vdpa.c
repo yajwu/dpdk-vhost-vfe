@@ -62,6 +62,7 @@ virtio_vdpa_find_priv_resource_by_vdev(const struct rte_vdpa_device *vdev)
 const struct rte_memzone *
 virtio_vdpa_dev_dp_map_get(struct virtio_vdpa_priv *priv, size_t len)
 {
+	RTE_ASSERT(priv);
 	if (!priv->vdpa_dp_map) {
 		if (!priv->vdpa_dp_map) {
 			char dp_mzone_name[64];
@@ -133,6 +134,9 @@ virtio_vdpa_gpa_to_hva(int vid, uint64_t gpa)
 
 int virtio_vdpa_dirty_desc_get(struct virtio_vdpa_priv *priv, int qix, uint64_t *desc_addr, uint32_t *write_len)
 {
+	RTE_ASSERT(priv);
+	RTE_ASSERT(priv->dev_ops);
+	RTE_ASSERT(priv->dev_ops->dirty_desc_get);
 	return priv->dev_ops->dirty_desc_get(priv->vid, qix, desc_addr, write_len);
 }
 
@@ -186,6 +190,8 @@ virtio_vdpa_vqs_max_get(struct rte_vdpa_device *vdev, uint32_t *queue_num)
 		return -ENODEV;
 	}
 
+	RTE_ASSERT(priv->dev_ops);
+	RTE_ASSERT(priv->dev_ops->vdpa_queue_num_unit_get);
 	unit = priv->dev_ops->vdpa_queue_num_unit_get();
 	*queue_num = priv->hw_nr_virtqs / unit;
 	DRV_LOG(DEBUG, "Vid %d queue num is %d unit %d", priv->vid, *queue_num, unit);
@@ -210,6 +216,7 @@ virtio_vdpa_features_get(struct rte_vdpa_device *vdev, uint64_t *features)
 
 	*features |= (1ULL << VHOST_USER_F_PROTOCOL_FEATURES);
 	*features |= (1ULL << VHOST_F_LOG_ALL);
+	RTE_ASSERT(priv->dev_ops);
 	if (priv->dev_ops->add_vdpa_feature)
 		priv->dev_ops->add_vdpa_feature(features);
 	DRV_LOG(INFO, "%s hw feature is 0x%" PRIx64, priv->vdev->device->name, *features);
@@ -229,6 +236,8 @@ virtio_vdpa_protocol_features_get(struct rte_vdpa_device *vdev,
 		return -ENODEV;
 	}
 
+	RTE_ASSERT(priv->dev_ops);
+	RTE_ASSERT(priv->dev_ops->vhost_feature_get);
 	priv->dev_ops->vhost_feature_get(features);
 	return 0;
 }
@@ -270,6 +279,8 @@ virtio_vdpa_virtq_handler(void *cb_arg)
 	uint64_t buf;
 	int nbytes,i;
 
+	RTE_ASSERT(priv);
+	RTE_ASSERT(virtq);
 	if (!priv->configured || !virtq->enable) {
 		return;
 	}
@@ -329,6 +340,8 @@ virtio_vdpa_virtq_doorbell_relay_disable(struct virtio_vdpa_priv *priv,
 	struct rte_intr_handle *intr_handle;
 	int retries = VIRTIO_VDPA_INTR_RETRIES;
 
+	RTE_ASSERT(priv);
+	RTE_ASSERT(priv->vrings[vq_idx]);
 	intr_handle = priv->vrings[vq_idx]->intr_handle;
 	if (rte_intr_fd_get(intr_handle) != -1) {
 		while (retries-- && ret == -EAGAIN) {
@@ -357,6 +370,7 @@ virtio_vdpa_virtq_doorbell_relay_enable(struct virtio_vdpa_priv *priv, int vq_id
 	struct rte_vhost_vring vq;
 	struct rte_intr_handle *intr_handle;
 
+	RTE_ASSERT(priv);
 	ret = rte_vhost_get_vhost_vring(priv->vid, vq_idx, &vq);
 	if (ret)
 		return ret;
@@ -368,6 +382,7 @@ virtio_vdpa_virtq_doorbell_relay_enable(struct virtio_vdpa_priv *priv, int vq_id
 		return -EINVAL;
 	}
 
+	RTE_ASSERT(priv->vrings[vq_idx]);
 	priv->vrings[vq_idx]->intr_handle = intr_handle;
 	if (rte_intr_fd_set(intr_handle, vq.kickfd)) {
 		DRV_LOG(ERR, "%s fail to set kick fd", priv->vdev->device->name);
@@ -410,6 +425,7 @@ virtio_vdpa_virtq_disable(struct virtio_vdpa_priv *priv, int vq_idx)
 {
 	int ret;
 
+	RTE_ASSERT(priv);
 	ret = virtio_vdpa_virtq_doorbell_relay_disable(priv, vq_idx);
 	if (ret) {
 		DRV_LOG(ERR, "%s doorbell relay disable failed ret:%d",
@@ -461,6 +477,7 @@ virtio_vdpa_virtq_enable(struct virtio_vdpa_priv *priv, int vq_idx)
 	struct virtio_pci_dev_vring_info vring_info;
 	uint64_t gpa;
 
+	RTE_ASSERT(priv);
 	vid = priv->vid;
 
 	ret = rte_vhost_get_vhost_vring(vid, vq_idx, &vq);
@@ -860,6 +877,7 @@ virtio_vdpa_dev_close_work(void *arg)
 	int ret;
 	struct virtio_vdpa_priv *priv = arg;
 
+	RTE_ASSERT(priv);
 	DRV_LOG(INFO, "%s vfid %d dev close work of lcore:%d start", priv->vdev->device->name, priv->vf_id, priv->lcore_id);
 
 	ret = virtio_vdpa_cmd_restore_state(priv->pf_priv, priv->vf_id, 0, priv->state_size, priv->state_mz->iova);
@@ -1402,6 +1420,7 @@ virtio_vdpa_dev_do_remove(struct rte_pci_device *pci_dev, struct virtio_vdpa_pri
 		DRV_LOG(ERR, "%s is dev close work had err", pci_dev->name);
 	}
 
+	RTE_ASSERT(priv->dev_ops);
 	if (priv->dev_ops->unreg_dev_intr) {
 		ret = virtio_pci_dev_interrupt_disable(priv->vpdev, 0);
 		if (ret) {
@@ -1654,6 +1673,7 @@ virtio_vdpa_dev_probe(struct rte_pci_driver *pci_drv __rte_unused,
 	mz_len = priv->state_mz->len;
 	memset(priv->state_mz->addr, 0, mz_len);
 
+	RTE_ASSERT(priv->dev_ops);
 	if (priv->dev_ops->reg_dev_intr) {
 		ret = priv->dev_ops->reg_dev_intr(priv);
 		if (ret) {
