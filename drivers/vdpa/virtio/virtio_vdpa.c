@@ -525,7 +525,7 @@ virtio_vdpa_virtq_enable(struct virtio_vdpa_priv *priv, int vq_idx)
 
 	DRV_LOG(DEBUG, "Virtq %d nr_entrys:%d", vq_idx, vq.size);
 
-	ret = priv->configured ? virtio_pci_dev_queue_set(priv->vpdev, vq_idx, &vring_info) :
+	ret = priv->configured ? virtio_pci_dev_queue_set(priv->vpdev, vq_idx, &vring_info, true) :
 		virtio_pci_dev_state_queue_set(priv->vpdev, vq_idx, &vring_info, priv->state_mz->addr);
 	if (ret) {
 		DRV_LOG(ERR, "%s setup_queue failed", priv->vdev->device->name);

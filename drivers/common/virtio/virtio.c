@@ -440,8 +440,8 @@ virtio_pci_dev_state_queue_del(struct virtio_pci_dev *vpdev, uint16_t qid, void 
 }
 
 int
-virtio_pci_dev_queue_set(struct virtio_pci_dev *vpdev,
-								   uint16_t qid, const struct virtio_pci_dev_vring_info *vring_info)
+virtio_pci_dev_queue_set(struct virtio_pci_dev *vpdev, uint16_t qid,
+		const struct virtio_pci_dev_vring_info *vring_info, bool wr_bar)
 {
 	struct virtio_hw *hw;
 	struct virtqueue *hw_vq;
@@ -456,9 +456,11 @@ virtio_pci_dev_queue_set(struct virtio_pci_dev *vpdev,
 	size = vring_size(hw, vring_info->size, VIRTIO_VRING_ALIGN);
 	hw_vq->vq_ring_size = RTE_ALIGN_CEIL(size, VIRTIO_VRING_ALIGN);
 
-	if (VIRTIO_OPS(hw)->setup_queue(hw, hw_vq) < 0) {
-		PMD_INIT_LOG(ERR, "Setup_queue failed");
-		return -EINVAL;
+	if (wr_bar) {
+		if (VIRTIO_OPS(hw)->setup_queue(hw, hw_vq) < 0) {
+			PMD_INIT_LOG(ERR, "Setup_queue failed");
+			return -EINVAL;
+		}
 	}
 
 	return 0;
