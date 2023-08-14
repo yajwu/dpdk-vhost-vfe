@@ -28,6 +28,7 @@ struct virtio_vdpa_vring_info {
 struct virtio_vdpa_priv {
 	TAILQ_ENTRY(virtio_vdpa_priv) next;
 	const struct rte_memzone *vdpa_dp_map;
+	const struct rte_memzone *cvq_log_mz;
 	struct virtio_vdpa_pf_priv *pf_priv;
 	struct rte_pci_device *pdev;
 	struct rte_vdpa_device *vdev;
@@ -74,4 +75,5 @@ int virtio_vdpa_dirty_desc_get(struct virtio_vdpa_priv *priv, int qix, uint64_t 
 int virtio_vdpa_used_vring_addr_get(struct virtio_vdpa_priv *priv, int qix, uint64_t *used_vring_addr, uint32_t *used_vring_len);
 const struct rte_memzone * virtio_vdpa_dev_dp_map_get(struct virtio_vdpa_priv *priv, size_t len);
 uint64_t virtio_vdpa_gpa_to_hva(int vid, uint64_t gpa);
+int virtio_vdpa_cvq_get_mz_length(struct virtio_vdpa_priv *priv);
 #endif /* _VIRTIO_VDPA_H_ */

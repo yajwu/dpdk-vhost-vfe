@@ -758,6 +758,19 @@ virtio_vdpa_dev_set_mem_table(int vid)
 #define PAGE_SIZE   (sysconf(_SC_PAGESIZE))
 #endif
 
+
+int
+virtio_vdpa_cvq_get_mz_length(struct virtio_vdpa_priv *priv)
+{
+	struct virtio_hw *hw = &priv->vpdev->hw;
+	struct virtnet_ctl *cvq = hw->cvq;
+
+	if (!cvq || !cvq->mz || !cvq->virtio_net_hdr_mz)
+		return 0;
+
+	return cvq->mz->len + cvq->virtio_net_hdr_mz->len;
+}
+
 static int
 virtio_vdpa_features_set(int vid)
 {
@@ -766,9 +779,9 @@ virtio_vdpa_features_set(int vid)
 		virtio_vdpa_find_priv_resource_by_vdev(vdev);
 	uint64_t log_base, log_size, max_phy, log_size_align;
 	uint64_t features;
-	struct virtio_sge lb_sge;
+	struct virtio_sge lb_sge[2];
 	rte_iova_t iova;
-	int ret;
+	int ret, sge_num = 1;
 
 	if (priv == NULL) {
 		DRV_LOG(ERR, "Invalid vDPA device: %s", vdev->device->name);
@@ -818,18 +831,44 @@ virtio_vdpa_features_set(int vid)
 			return ret;
 		}
 
-		lb_sge.addr = log_base;
-		lb_sge.len = log_size;
+		lb_sge[0].addr = log_base;
+		lb_sge[0].len = log_size;
 		ret = virtio_vdpa_max_phy_addr_get(priv, &max_phy);
 		if (ret) {
 			DRV_LOG(ERR, "%s failed to get max phy addr",
-						priv->vdev->device->name);
+                    priv->vdev->device->name);
 			return ret;
 		}
 
-		ret = virtio_vdpa_cmd_dirty_page_start_track(priv->pf_priv, priv->vf_id, VIRTIO_M_DIRTY_TRACK_PUSH_BITMAP, PAGE_SIZE, 0, max_phy, 1, &lb_sge);
-		DRV_LOG(INFO, "%s vfid %d start track max phy:%" PRIx64 "log_base %" PRIx64 "log_size %" PRIx64,
+		if (priv->guest_features & (1ull << VIRTIO_NET_F_CTRL_VQ)) {
+			char dp_mzone_name[64];
+			int cvq_mz_len;
+
+			cvq_mz_len = virtio_vdpa_cvq_get_mz_length(priv);
+
+			snprintf(dp_mzone_name, sizeof(dp_mzone_name), "virtio_vdpa_cvq_log_mz_%u",
+					priv->vid);
+
+			priv->cvq_log_mz = rte_memzone_reserve_aligned(dp_mzone_name,
+					cvq_mz_len, rte_socket_id(), RTE_MEMZONE_IOVA_CONTIG,
+					PAGE_SIZE);
+			if (!priv->cvq_log_mz) {
+				DRV_LOG(ERR, "%s failed to get max phy addr",
+							priv->vdev->device->name);
+				return -ENOMEM;
+			}
+
+			sge_num += 1;
+
+			lb_sge[1].addr = (uint64_t)priv->cvq_log_mz->addr;
+			lb_sge[1].len = priv->cvq_log_mz->len;
+
+			max_phy += priv->cvq_log_mz->len;
+		}
+
+		DRV_LOG(INFO, "%s vfid %d start track max phy:%" PRIx64 " log_base %" PRIx64 " log_size %" PRIx64,
 					priv->vdev->device->name, priv->vf_id, max_phy , log_base, log_size);
+		ret = virtio_vdpa_cmd_dirty_page_start_track(priv->pf_priv, priv->vf_id, VIRTIO_M_DIRTY_TRACK_PUSH_BITMAP, PAGE_SIZE, 0, max_phy, sge_num, lb_sge);
 		if (ret) {
 			DRV_LOG(ERR, "%s failed to start track ret:%d",
 						priv->vdev->device->name, ret);
@@ -842,6 +881,8 @@ virtio_vdpa_features_set(int vid)
 	/* TO_DO: check why --- */
 	features |= (1ULL << VIRTIO_F_IOMMU_PLATFORM);
 	features |= (1ULL << VIRTIO_F_RING_RESET);
+	features |= (1ULL << VIRTIO_NET_F_CTRL_VQ);
+
 	if (priv->configured)
 		DRV_LOG(ERR, "%s vid %d set feature after driver ok, only when live migration", priv->vdev->device->name, vid);
 	else
@@ -988,7 +1029,7 @@ virtio_vdpa_dev_close(int vid)
 			DRV_LOG(ERR, "%s failed to get max phy addr",
 						priv->vdev->device->name);
 		}
-
+		max_phy += virtio_vdpa_cvq_get_mz_length(priv);
 		ret = virtio_vdpa_cmd_dirty_page_stop_track(priv->pf_priv, priv->vf_id, max_phy);
 		if (ret) {
 			DRV_LOG(ERR, "%s failed to stop track max_phy %" PRIx64 " ret:%d",
@@ -1001,7 +1042,7 @@ virtio_vdpa_dev_close(int vid)
 						priv->vdev->device->name);
 		}
 
-		DRV_LOG(INFO, "%s vfid %d stop track max phy:%" PRIx64 "log_base %" PRIx64 "log_size %" PRIx64,
+		DRV_LOG(INFO, "%s vfid %d stop track max phy:%" PRIx64 " log_base %" PRIx64 " log_size %" PRIx64,
 					priv->vdev->device->name, priv->vf_id, max_phy , log_base, log_size);
 
 		iova = rte_mem_virt2iova((void *)log_base);
@@ -1021,6 +1062,11 @@ virtio_vdpa_dev_close(int vid)
 						priv->vdev->device->name, ret);
 		}
 
+		if (priv->cvq_log_mz) {
+			rte_memzone_free(priv->cvq_log_mz);
+			priv->cvq_log_mz = NULL;
+			DRV_LOG(INFO, "%s free CVQ log buffer", priv->vdev->device->name);
+		}
 	}
 	ret = virtio_vdpa_cmd_get_internal_pending_bytes(priv->pf_priv, priv->vf_id, &res);
 	if (ret) {

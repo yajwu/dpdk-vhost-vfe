@@ -198,10 +198,16 @@ rte_vdpa_vf_dev_debug(const char *vf_name,
 				RPC_LOG(ERR, "<<<<Invalid VM memory size>>>>");
 				return -EINVAL;
 			}
+
+			if (vf_priv->guest_features & (1ull << VIRTIO_NET_F_CTRL_VQ)) {
+				range_length += virtio_vdpa_cvq_get_mz_length(vf_priv);
+				RPC_LOG(INFO, "vf debug: range_length %"PRIu64, range_length);
+			}
 			if ((vf_debug_info->test_mode == VIRTIO_M_DIRTY_TRACK_PUSH_BITMAP ||
 					vf_debug_info->test_mode == VIRTIO_M_DIRTY_TRACK_PULL_BITMAP))
 				unit = 8;
 			sge.len = range_length/(PAGE_SIZE * unit);
+			sge.len += 1; /* need consider range_length isn't (PAGE_SIZE * unit) aligned */
 			vdpa_dp_mz = virtio_vdpa_dev_dp_map_get(vf_priv, sge.len);
 			sge.addr = (uint64_t)vdpa_dp_mz->addr;
 			RPC_LOG(DEBUG, "range_length[%" PRIu64 "]/(page_size[%" PRIu64 "] * unit[%u]) = %u",
@@ -261,6 +267,24 @@ rte_vdpa_vf_dev_debug(const char *vf_name,
 						RPC_LOG(INFO, "Check queue %d used ring pass dirty_addr %" PRIx64
 								" dirty_len %d ret: %d", i, dirty_addr, dirty_len, ret);
 				}
+			}
+			/* check CVQ */
+			if (vf_priv->guest_features & (1ull << VIRTIO_NET_F_CTRL_VQ)) {
+				uint64_t dirty_addr;
+				struct virtio_pci_dev_vring_info vring_info;
+
+				virtio_pci_dev_queue_get(vf_priv->vpdev, vf_priv->hw_nr_virtqs - 1, &vring_info);
+				dirty_addr = vring_info.used;
+				ret = virtio_vdpa_rpc_check_dirty_logging(dirty_addr,
+						sizeof(struct vring_used),
+						vdpa_dp_mz->addr, vdpa_dp_mz->len,
+						vf_debug_info->test_mode, PAGE_SIZE);
+				if (ret)
+					RPC_LOG(ERR, "Check CVQ %d used ring fail dirty_addr %" PRIx64
+							" dirty_len %lu ret: %d", i, dirty_addr, sizeof(struct vring_used), ret);
+				else
+					RPC_LOG(INFO, "Check CVQ %d used ring pass dirty_addr %" PRIx64
+							" dirty_len %lu ret: %d", i, dirty_addr, sizeof(struct vring_used), ret);
 			}
 			break;
 		default:
