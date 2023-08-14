@@ -919,3 +919,10 @@ virtio_pci_dev_init_vring(struct virtqueue *vq)
 	virtqueue_disable_intr_split(vq);
 }
 
+int
+virtio_pci_dev_init_cvq(struct virtio_hw *hw)
+{
+	if (hw->virtio_dev_sp_ops->dev_init_cvq)
+		return hw->virtio_dev_sp_ops->dev_init_cvq(hw);
+	return -ENOTSUP;
+}

@@ -67,6 +67,8 @@ void virtio_pci_dev_state_features_get(struct virtio_pci_dev *vpdev, uint64_t *f
 __rte_internal
 int virtio_pci_dev_queue_set(struct virtio_pci_dev *vpdev, uint16_t qid, const struct virtio_pci_dev_vring_info *vring_info, bool wr_bar);
 __rte_internal
+int virtio_pci_dev_queue_get(struct virtio_pci_dev *vpdev, uint16_t qid, struct virtio_pci_dev_vring_info *vring_info);
+__rte_internal
 void virtio_pci_dev_queue_del(struct virtio_pci_dev *vpdev, uint16_t qid);
 __rte_internal
 void virtio_pci_dev_state_dev_status_set(void *state, uint8_t dev_status);
@@ -122,6 +124,8 @@ __rte_internal
 uint8_t virtio_pci_dev_isr_get(struct virtio_pci_dev *vpdev);
 __rte_internal
 void virtio_pci_dev_init_vring(struct virtqueue *vq);
+__rte_internal
+int virtio_pci_dev_init_cvq(struct virtio_hw *hw);
 
 
 #endif /* _VIRTIO_API_H_ */
