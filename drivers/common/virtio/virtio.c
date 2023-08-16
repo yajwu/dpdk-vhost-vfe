@@ -853,4 +853,144 @@ virtio_pci_dev_isr_get(struct virtio_pci_dev *vpdev)
 	return VIRTIO_OPS(hw)->get_isr(hw);
 }
 
+static struct virtio_pmd_ctrl *
+virtio_send_command_split(struct virtnet_ctl *cvq,
+			  struct virtio_pmd_ctrl *ctrl,
+			  int *dlen, int pkt_num)
+{
+	struct virtio_pmd_ctrl *result;
+	struct virtqueue *vq = virtnet_cq_to_vq(cvq);
+	uint32_t head, i;
+	int k, sum = 0;
+
+	head = vq->vq_desc_head_idx;
+
+	/*
+	 * Format is enforced in qemu code:
+	 * One TX packet for header;
+	 * At least one TX packet per argument;
+	 * One RX packet for ACK.
+	 */
+	vq->vq_split.ring.desc[head].flags = VRING_DESC_F_NEXT;
+	vq->vq_split.ring.desc[head].addr = cvq->mz_hdr_iova;
+	vq->vq_split.ring.desc[head].len = sizeof(struct virtio_net_ctrl_hdr);
+	vq->vq_free_cnt--;
+	i = vq->vq_split.ring.desc[head].next;
+
+	for (k = 0; k < pkt_num; k++) {
+		vq->vq_split.ring.desc[i].flags = VRING_DESC_F_NEXT;
+		vq->vq_split.ring.desc[i].addr = cvq->mz_hdr_iova
+			+ sizeof(struct virtio_net_ctrl_hdr)
+			+ sizeof(ctrl->status) + sizeof(uint8_t)*sum;
+		vq->vq_split.ring.desc[i].len = dlen[k];
+		sum += dlen[k];
+		vq->vq_free_cnt--;
+		i = vq->vq_split.ring.desc[i].next;
+	}
+
+	vq->vq_split.ring.desc[i].flags = VRING_DESC_F_WRITE;
+	vq->vq_split.ring.desc[i].addr = cvq->mz_hdr_iova
+			+ sizeof(struct virtio_net_ctrl_hdr);
+	vq->vq_split.ring.desc[i].len = sizeof(ctrl->status);
+	vq->vq_free_cnt--;
+
+	vq->vq_desc_head_idx = vq->vq_split.ring.desc[i].next;
+
+	vq_update_avail_ring(vq, head);
+	vq_update_avail_idx(vq);
+
+	PMD_INIT_LOG(DEBUG, "vq->vq_queue_index = %d", vq->vq_queue_index);
+
+	virtqueue_notify(vq);
+
+	while (virtqueue_nused(vq) == 0)
+		usleep(100);
+
+	while (virtqueue_nused(vq)) {
+		uint32_t idx, desc_idx, used_idx;
+		struct vring_used_elem *uep;
+
+		used_idx = (uint32_t)(vq->vq_used_cons_idx
+				& (vq->vq_nentries - 1));
+		uep = &vq->vq_split.ring.used->ring[used_idx];
+		idx = (uint32_t) uep->id;
+		desc_idx = idx;
+
+		while (vq->vq_split.ring.desc[desc_idx].flags &
+				VRING_DESC_F_NEXT) {
+			desc_idx = vq->vq_split.ring.desc[desc_idx].next;
+			vq->vq_free_cnt++;
+		}
+
+		vq->vq_split.ring.desc[desc_idx].next = vq->vq_desc_head_idx;
+		vq->vq_desc_head_idx = idx;
+
+		vq->vq_used_cons_idx++;
+		vq->vq_free_cnt++;
+	}
+
+	PMD_INIT_LOG(DEBUG, "vq->vq_free_cnt=%d\nvq->vq_desc_head_idx=%d",
+			vq->vq_free_cnt, vq->vq_desc_head_idx);
+
+	result = cvq->virtio_net_hdr_mz->addr;
+	return result;
+}
+
+
+static int
+virtio_send_ctl_command_split(struct virtnet_ctl *cvq,
+		struct virtio_pmd_ctrl *ctrl,
+		int *dlen, int pkt_num)
+{
+	virtio_net_ctrl_ack status = ~0;
+	struct virtio_pmd_ctrl *result;
+	struct virtqueue *vq;
+
+	ctrl->status = status;
+
+	if (!cvq) {
+		PMD_INIT_LOG(ERR, "Control queue is not supported.");
+		return -1;
+	}
+
+	rte_spinlock_lock(&cvq->lock);
+	vq = virtnet_cq_to_vq(cvq);
+
+	PMD_INIT_LOG(DEBUG, "vq->vq_desc_head_idx = %d, status = %d, "
+		"vq->hw->cvq = %p vq = %p",
+		vq->vq_desc_head_idx, status, vq->hw->cvq, vq);
+
+	if (vq->vq_free_cnt < pkt_num + 2 || pkt_num < 1) {
+		rte_spinlock_unlock(&cvq->lock);
+		return -1;
+	}
+
+	memcpy(cvq->virtio_net_hdr_mz->addr, ctrl,
+		sizeof(struct virtio_pmd_ctrl));
+
+	result = virtio_send_command_split(cvq, ctrl, dlen, pkt_num);
+
+	rte_spinlock_unlock(&cvq->lock);
+	return result->status;
+}
+
+int
+virtio_pci_dev_mac_addr_set(struct virtio_hw *hw, struct rte_ether_addr *mac_addr)
+{
+	/* Use atomic update if available */
+	if (virtio_with_feature(hw, VIRTIO_NET_F_MAC)) {
+		PMD_INIT_LOG(DEBUG, "virtio_mac_addr_set");
+		struct virtio_pmd_ctrl ctrl;
+		int len = RTE_ETHER_ADDR_LEN;
+
+		ctrl.hdr.class = VIRTIO_NET_CTRL_MAC;
+		ctrl.hdr.cmd = VIRTIO_NET_CTRL_MAC_ADDR_SET;
+
+		memcpy(ctrl.data, mac_addr, RTE_ETHER_ADDR_LEN);
+		return virtio_send_ctl_command_split(hw->cvq, &ctrl, &len, 1);
+	}
+
+	return -ENOTSUP;
+}
+
 RTE_LOG_REGISTER(virtio_pci_dev_logtype, pmd.virtio.dev, NOTICE);

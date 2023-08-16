@@ -126,6 +126,8 @@ __rte_internal
 void virtio_pci_dev_init_vring(struct virtqueue *vq);
 __rte_internal
 int virtio_pci_dev_init_cvq(struct virtio_hw *hw);
+__rte_internal
+int virtio_pci_dev_mac_addr_set(struct virtio_hw *hw, struct rte_ether_addr *mac_addr);
 
 
 #endif /* _VIRTIO_API_H_ */

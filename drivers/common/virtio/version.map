@@ -42,6 +42,7 @@ INTERNAL {
 	virtio_pci_dev_isr_get;
 	virtio_pci_dev_init_vring;
 	virtio_pci_dev_init_cvq;
+	virtio_pci_dev_mac_addr_set;
 
 	local: *;
 };
