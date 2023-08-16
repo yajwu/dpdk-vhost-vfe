@@ -287,6 +287,13 @@ rte_vdpa_vf_dev_debug(const char *vf_name,
 							" dirty_len %lu ret: %d", i, dirty_addr, sizeof(struct vring_used), ret);
 			}
 			break;
+		case VDPA_DEBUG_CMD_SET_MAC:
+			{
+				uint64_t mac=0x112233445566;
+				ret = virtio_pci_dev_mac_addr_set(&vf_priv->vpdev->hw, (struct rte_ether_addr *)&mac);
+				RPC_LOG(INFO, "%s set mac to  %"PRIx64", ret %d", vf_name, mac, ret);
+				break;
+			}
 		default:
 			RPC_LOG(ERR, "Unsupported command %d", vf_debug_info->test_type);
 			return -EINVAL;

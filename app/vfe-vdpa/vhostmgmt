@@ -304,7 +304,7 @@ def main():
                 print("Error: No vf device specified for test vf action.")
                 parser.print_usage()
                 sys.exit(1)
-            if not args.test_operation or args.test_operation > 6:
+            if not args.test_operation or args.test_operation > 7:
                 print("Error: invalid debug operation.")
                 parser.print_usage()
                 sys.exit(1)
