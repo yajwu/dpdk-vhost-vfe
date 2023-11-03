@@ -69,4 +69,15 @@ rte_vdpa_pf_dev_remove(const char *pf_name);
 int
 rte_vdpa_get_pf_list(struct virtio_vdpa_pf_info *pf_info, int max_pf_num);
 
+struct virtio_vdpa_pf_priv {
+	TAILQ_ENTRY(virtio_vdpa_pf_priv) next;
+	struct rte_pci_device *pdev;
+	struct virtio_pci_dev *vpdev;
+	struct virtio_vdpa_dev_ops *dev_ops;
+	uint64_t device_features;
+	int vfio_dev_fd;
+	uint16_t hw_nr_virtqs; /* number of vq device supported*/
+	int vfio_container_fd;
+};
+
 #endif /* _VIRTIO_LM_H_ */

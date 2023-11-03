@@ -633,6 +633,10 @@ virtio_vdpa_dev_cleanup(int vid)
 		return -ENODEV;
 	}
 
+    if (priv->vfio_container_fd == -1) {
+        return 0;
+    }
+
 	priv->dev_conf_read = false;
 
 	mem = priv->mem;
@@ -707,6 +711,12 @@ virtio_vdpa_dev_set_mem_table(int vid)
 					priv->vdev->device->name, ret);
 		return ret;
 	}
+
+    if (priv->vfio_container_fd == -1) {
+		DRV_LOG(ERR, "%s yajun: skip rte_vfio_container_dma_map",
+					priv->vdev->device->name);
+        return 0;
+    }
 
 	/* Unmap reagion dind't exsit in current */
 	if (priv->mem) {
@@ -1623,12 +1633,17 @@ virtio_vdpa_dev_probe(struct rte_pci_driver *pci_drv __rte_unused,
 	priv->vfio_group_fd = -1;
 	priv->vfio_container_fd = -1;
 
-	priv->vfio_container_fd = rte_vfio_container_create();
-	if (priv->vfio_container_fd < 0) {
-		DRV_LOG(ERR, "%s failed to get container fd", devname);
-		rte_errno = rte_errno ? rte_errno : EINVAL;
-		goto error;
-	}
+    DRV_LOG(ERR, "yajun: PF container fd %d", priv->pf_priv->vfio_container_fd);
+    if (priv->pf_priv->vfio_container_fd == 0) {
+        priv->vfio_container_fd = rte_vfio_container_create();
+        if (priv->vfio_container_fd < 0) {
+            DRV_LOG(ERR, "%s failed to get container fd", devname);
+            rte_errno = rte_errno ? rte_errno : EINVAL;
+            goto error;
+        }
+        priv->pf_priv->vfio_container_fd = priv->vfio_container_fd;
+        DRV_LOG(ERR, "yajun: container fd %d", priv->vfio_container_fd);
+    }
 
 	do {
 		ret = rte_vfio_get_group_num(rte_pci_get_sysfs_path(), devname,
@@ -1642,7 +1657,7 @@ virtio_vdpa_dev_probe(struct rte_pci_driver *pci_drv __rte_unused,
 		DRV_LOG(INFO, "%s iommu_group_num:%d retries:%d", devname, iommu_group_num, retries);
 
 		priv->vfio_group_fd = rte_vfio_container_group_bind(
-				priv->vfio_container_fd, iommu_group_num);
+				priv->pf_priv->vfio_container_fd, iommu_group_num);
 		if (priv->vfio_group_fd < 0) {
 			DRV_LOG(ERR, "%s failed to get group fd", devname);
 			sleep(1);

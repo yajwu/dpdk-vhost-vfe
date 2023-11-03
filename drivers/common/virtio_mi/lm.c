@@ -40,15 +40,6 @@ struct virtio_vdpa_dev_ops {
 	uint16_t (*get_adminq_idx)(struct virtio_vdpa_pf_priv *priv);
 };
 
-struct virtio_vdpa_pf_priv {
-	TAILQ_ENTRY(virtio_vdpa_pf_priv) next;
-	struct rte_pci_device *pdev;
-	struct virtio_pci_dev *vpdev;
-	struct virtio_vdpa_dev_ops *dev_ops;
-	uint64_t device_features;
-	int vfio_dev_fd;
-	uint16_t hw_nr_virtqs; /* number of vq device supported*/
-};
 
 struct sge_iova {
 	rte_iova_t iova;
