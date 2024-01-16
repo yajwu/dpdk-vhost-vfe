@@ -29,6 +29,7 @@
 #include <cmdline.h>
 
 #include "vdpa_rpc.h"
+#include "vdpa_conf.h"
 
 static struct vdpa_rpc_context vdpa_rpc_ctx;
 
@@ -734,6 +735,7 @@ main(int argc, char *argv[])
 	rte_uuid_t vf_token;
 	sigset_t set;
 	pthread_t thread_s;
+    struct service_conf init_conf;
 
 	devcnt = 0;
 	memset(vports, 0, sizeof(*vports));
@@ -758,12 +760,16 @@ main(int argc, char *argv[])
 	argv += ret;
 	eal_start = true;
 
+    service_load_conf(&init_conf);
+
 	rte_eal_vfio_get_vf_token(vf_token);
 	/* Generate VF token firstly, if the user-configured NULL*/
 	if (rte_uuid_is_null(vf_token)) {
 		uuid_generate(vf_token);
 		rte_eal_vfio_set_vf_token(vf_token);
 	}
+
+    service_apply_conf(&init_conf);
 	ret = vdpa_rpc_start(&vdpa_rpc_ctx);
 	if (ret < 0)
 		rte_exit(EXIT_FAILURE, "rpc init failed\n");
