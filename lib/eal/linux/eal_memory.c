@@ -92,9 +92,6 @@ rte_mem_virt2phy(const void *virtaddr)
 	int page_size;
 	off_t offset;
 
-	if (phys_addrs_available == 0)
-		return RTE_BAD_IOVA;
-
 	/* standard page size */
 	page_size = getpagesize();
 
