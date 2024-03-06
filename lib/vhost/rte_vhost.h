@@ -111,7 +111,7 @@ extern "C" {
 #endif
 
 #ifndef VHOST_USER_PROTOCOL_F_PRESETUP
-#define VHOST_USER_PROTOCOL_F_PRESETUP 18
+#define VHOST_USER_PROTOCOL_F_PRESETUP 20
 #endif
 
 /** Indicate whether protocol features negotiation is supported. */
