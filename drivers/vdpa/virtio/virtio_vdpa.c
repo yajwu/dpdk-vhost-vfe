@@ -509,6 +509,7 @@ virtio_vdpa_dev_notifier(void *arg)
 	DRV_LOG(INFO, "%s vid %d dev notifier thread of vq id:%d start",
 			work->priv->vdev->device->name, work->priv->vid, work->vq_idx);
 
+
 	ret = rte_vhost_host_notifier_ctrl(work->priv->vid, work->vq_idx, true);
 	if (ret) {
 		DRV_LOG(ERR, "%s vid %d dev notifier thread failed use relay ret:%d vq id:%d",
@@ -533,19 +534,6 @@ virtio_vdpa_dev_notifier(void *arg)
 	}
 	DRV_LOG(INFO, "%s vid %d dev notifier work of vq id:%d finish",
 			work->priv->vdev->device->name, work->priv->vid, work->vq_idx);
-	/* Notify device anyway, in case loss doorbell */
-	if (work->vq_idx == RTE_VHOST_QUEUE_ALL) {
-		nr_virtqs = rte_vhost_get_vring_num(work->priv->vid);
-		i = 0;
-		for(; i < nr_virtqs; i++) {
-			virtio_pci_dev_queue_notify(work->priv->vpdev, i);
-			rte_vhost_vring_call(work->priv->vid, i);
-		}
-	} else {
-		virtio_pci_dev_queue_notify(work->priv->vpdev, work->vq_idx);
-		rte_vhost_vring_call(work->priv->vid, work->vq_idx);
-	}
-
 	rte_free(work);
 	return NULL;
 }
@@ -1598,6 +1586,27 @@ virtio_vdpa_dev_config(int vid)
 		}
 	}
 
+	notify_work = rte_zmalloc(NULL, sizeof(*notify_work), 0);
+	if (!notify_work) {
+		DRV_LOG(ERR, "%s vfid %d failed to alloc notify thread", priv->vdev->device->name, priv->vf_id);
+		rte_errno = rte_errno ? rte_errno : ENOMEM;
+		return -rte_errno;
+	}
+
+	notify_work->priv = priv;
+	notify_work->vq_idx = RTE_VHOST_QUEUE_ALL;
+	DRV_LOG(INFO, "%s vfid %d launch all vq notifier thread",
+			priv->vdev->device->name, priv->vf_id);
+	priv->is_notify_thread_started = false;
+	ret = pthread_create(&priv->notify_tid, NULL, virtio_vdpa_dev_notifier, notify_work);
+	if (ret) {
+		DRV_LOG(ERR, "%s vfid %d failed launch notifier thread ret:%d",
+				priv->vdev->device->name, priv->vf_id, ret);
+		rte_free(notify_work);
+		return -rte_errno;
+	}
+	priv->is_notify_thread_started = true;
+
 	virtio_pci_dev_state_dev_status_set(priv->state_mz->addr, VIRTIO_CONFIG_STATUS_ACK |
 													VIRTIO_CONFIG_STATUS_DRIVER |
 													VIRTIO_CONFIG_STATUS_FEATURES_OK |
@@ -1660,29 +1669,14 @@ virtio_vdpa_dev_config(int vid)
 	}
 
 	priv->restore = false;
+
+	nr_virtqs = rte_vhost_get_vring_num(priv->vid);
+	for(i = 0; i < nr_virtqs; i++) {
+		virtio_pci_dev_queue_notify(priv->vpdev, i);
+		rte_vhost_vring_call(priv->vid, i);
+	}
+
 	DRV_LOG(INFO, "%s vid %d move to driver ok", vdev->device->name, vid);
-
-	notify_work = rte_zmalloc(NULL, sizeof(*notify_work), 0);
-	if (!notify_work) {
-		DRV_LOG(ERR, "%s vfid %d failed to alloc notify thread", priv->vdev->device->name, priv->vf_id);
-		rte_errno = rte_errno ? rte_errno : ENOMEM;
-		return -rte_errno;
-	}
-
-	notify_work->priv = priv;
-	notify_work->vq_idx = RTE_VHOST_QUEUE_ALL;
-	DRV_LOG(INFO, "%s vfid %d launch all vq notifier thread",
-			priv->vdev->device->name, priv->vf_id);
-	priv->is_notify_thread_started = false;
-	ret = pthread_create(&priv->notify_tid, NULL,virtio_vdpa_dev_notifier, notify_work);
-	if (ret) {
-		DRV_LOG(ERR, "%s vfid %d failed launch notifier thread ret:%d",
-				priv->vdev->device->name, priv->vf_id, ret);
-		rte_free(notify_work);
-		return -rte_errno;
-	}
-	priv->is_notify_thread_started = true;
-
 	priv->configured = 1;
 	gettimeofday(&end, NULL);
 

@@ -11,6 +11,7 @@
 #include <regex.h>
 #include <fnmatch.h>
 #include <sys/queue.h>
+#include <sys/time.h>
 
 #include <rte_log.h>
 #include <rte_os_shim.h>
@@ -490,6 +491,7 @@ rte_vlog(uint32_t level, uint32_t logtype, const char *format, va_list ap)
 {
 	FILE *f = rte_log_get_stream();
 	int ret;
+    struct timeval _now;
 
 	if (logtype >= rte_logs.dynamic_types_len)
 		return -1;
@@ -500,6 +502,8 @@ rte_vlog(uint32_t level, uint32_t logtype, const char *format, va_list ap)
 	RTE_PER_LCORE(log_cur_msg).loglevel = level;
 	RTE_PER_LCORE(log_cur_msg).logtype = logtype;
 
+	gettimeofday(&_now, NULL);
+	fprintf(f,"%zu.%06zu:", (size_t)_now.tv_sec, (size_t)_now.tv_usec);
 	ret = vfprintf(f, format, ap);
 	fflush(f);
 	return ret;
