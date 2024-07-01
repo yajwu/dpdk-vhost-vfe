@@ -1654,9 +1654,7 @@ virtio_vdpa_dev_config(int vid)
 	}
 	priv->is_notify_thread_started = true;
 
-	priv->configured = 1;
 	gettimeofday(&end, NULL);
-
 	time_used = (end.tv_sec - start.tv_sec) * 1e6 + end.tv_usec - start.tv_usec;
 	DRV_LOG(INFO, "%s vid %d was configured at %lu.%06lu, took %lu us.", vdev->device->name,
 			vid, end.tv_sec, end.tv_usec, time_used);
@@ -1667,13 +1665,13 @@ virtio_vdpa_dev_config(int vid)
 		vhost_sock_fd = rte_vhost_get_conn_fd(vid);
 		if (vhost_sock_fd < 0) {
 			DRV_LOG(ERR, "Failed to get vhost sock fd (vid %d)", vid);
-			return 0;
+			goto out;
 		}
 
 		ret = virtio_ha_vf_vhost_fd_store(&priv->vf_name, &priv->pf_name, vhost_sock_fd);
 		if (ret) {
 			DRV_LOG(ERR, "Failed to store vhost fd (vid %d)", vid);
-			return 0;
+			goto out;
 		}
 
 		priv->ctx_stored = true;
@@ -1689,6 +1687,8 @@ unlock:
 		}
 	}
 
+out:
+	priv->configured = 1;
 	return 0;
 }
 
