@@ -34,9 +34,10 @@ virtio_vdpa_net_vhost_feature_get(uint64_t *features)
 static int
 virtio_vdpa_net_dirty_desc_get(int vid, int qix, uint64_t *desc_addr, uint32_t *write_len)
 {
+	uint32_t desc_id, used_idx;
 	struct rte_vhost_vring vq;
-	uint32_t desc_id;
-	int ret;
+	bool find_flag;
+	int ret, i;
 
 	ret = rte_vhost_get_vhost_vring(vid, qix, &vq);
 	if (ret) {
@@ -44,10 +45,23 @@ virtio_vdpa_net_dirty_desc_get(int vid, int qix, uint64_t *desc_addr, uint32_t *
 		return -ENODEV;
 	}
 
-	desc_id = vq.used->ring[(vq.used->idx -1) & (vq.size -1)].id;
-	*desc_addr = vq.desc[desc_id].addr;
-	*write_len = RTE_MIN(vq.used->ring[(vq.used->idx -1) & (vq.size -1)].len, vq.desc[desc_id].len);
+	find_flag = false;
+	for (i = 0; i < vq.size; i++) {
+		used_idx = (vq.used->idx -1 - i) & (vq.size -1);
+		if (!vq.used->ring[used_idx].len)
+			continue;
+		find_flag = true;
+		desc_id = vq.used->ring[used_idx].id;
+		break;
+	}
 
+	if (!find_flag) {
+		NET_LOG(ERR, "VID: %d qix:%d fail to get dirty desc", vid, qix);
+		return -1;
+	}
+
+	*desc_addr = vq.desc[desc_id].addr;
+	*write_len = RTE_MIN(vq.used->ring[used_idx].len, vq.desc[desc_id].len);
 	return 0;
 }
 static int
